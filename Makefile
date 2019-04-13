@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/04/12 17:16:45 by callen           ###   ########.fr        #
+#    Updated: 2019/04/12 17:55:44 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -70,7 +70,7 @@ dclean:
 	rm -rf $(DNAM) $(DNAM).dSYM $(ANAM) $(ANAM).dSYM
 
 clean:
-	@make -sC libft clean
+	make -C libft clean
 	rm -Rf $(OBJDIR)
 
 fclean: clean
@@ -92,4 +92,5 @@ norme:
 	@$(NRM) $(NORME)
 
 codesize:
-	@cat $(NORME) | grep -Ev '(^\/\*|^\*\*|^\*\/$$|^$$|\*\/)' | wc -l
+	@printf "Lines of code: "
+	@cat $(NORME) | grep -Ev '(^\/\*|^\*\*|^\*\/$$|^$$|\*\/)' | wc -l | cut -d' ' -f7
