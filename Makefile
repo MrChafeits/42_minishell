@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/04/12 14:56:24 by callen           ###   ########.fr        #
+#    Updated: 2019/04/12 17:16:45 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -59,11 +59,11 @@ k: fclean dclean
 
 asan:
 	@make -sC libft asan
-	@$(CC) $(AFLAGS) $(INCFLAGS) $(ASANLIBS) -o $(ANAM) $(addprefix $(SRCDIR), $(SRC))
+	@$(CC) $(AFLAGS) $(INCFLAGS) $(ASANLIBS) -o $(ANAM) $(addprefix $(SRCDIR)/, $(SRC))
 
 debug:
 	@make -sC libft debug
-	@$(CC) $(DFLAGS) $(INCFLAGS) $(DEBGLIBS) -o $(DNAM) $(addprefix $(SRCDIR), $(SRC))
+	@$(CC) $(DFLAGS) $(INCFLAGS) $(DEBGLIBS) -o $(DNAM) $(addprefix $(SRCDIR)/, $(SRC))
 
 dclean:
 	@make -C libft dclean
@@ -80,9 +80,9 @@ fclean: clean
 re: fclean all
 
 tags:
-	ctags $(addsuffix *.h,$(INCDIR)/) $(addsuffix *.c,$(SRCDIR))
+	ctags $(addsuffix *.h,$(INCDIR)/) $(addsuffix *.c,$(SRCDIR)/)
 
-$(addprefix $(OBJDIR), %.o): $(addprefix $(SRCDIR), %.c)
+$(addprefix $(OBJDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
 	@$(CC) $(INCFLAGS) $(CFLAGS) -o $@ -c $<
 
 $(OBJDIR):
