@@ -16,20 +16,37 @@
 /*
 ** Allowed Functions:
 **    malloc, free
+**     - stdlib.h
 **    access
+**     - unistd.h
 **    open, close, read, write
+**     - fcntl.h
 **    opendir, readdir, closedir
+**     - dirent.h
 **    getcwd, chdir
+**     - unistd.h
 **    stat, lstat, fstat
+**     - sys/stat.h
 **    fork, execve
+**     - unistd.h
 **    wait, waitpid, wait3, wait4
+**     - wait.h
 **    signal, kill
+**     - signal.h
 **    exit
 **  For bonuses
 **    tcgetattr
+**     - termios.h
 */
 
-# include <stdio.h>
+typedef struct s_mainargs	t_margs;
+struct	s_mainargs
+{
+	int		c;
+	char	**v;
+	char	**e;
+	char	**a;
+};
 
 /*
 ** Mandatory Part:
