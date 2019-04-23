@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/04/12 17:55:44 by callen           ###   ########.fr        #
+#    Updated: 2019/04/22 16:54:43 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,7 +30,7 @@ DEBGLIBS := $(LIBDIR)/d_libft.a
 ASANLIBS := $(LIBDIR)/a_libft.a
 FRAMWRKS :=
 
-SRC := main.c
+SRC := main.c bc_echo.c
 
 OBJ := $(addprefix $(OBJDIR)/, $(SRC:.c=.o))
 

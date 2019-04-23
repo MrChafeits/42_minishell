@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/04/12 17:39:52 by callen           ###   ########.fr       */
+/*   Updated: 2019/04/22 18:59:21 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,5 +73,8 @@ struct	s_mainargs
 **  - Separating commands with ";"
 **  - Others that I think will be useful
 */
+
+int		echo_builtin_ash(int argc, char **argv);
+int		echo_builtin_cmd(int argc, char **argv);
 
 #endif
