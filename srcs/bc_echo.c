@@ -111,3 +111,14 @@ int			echo_builtin_cmd(int argc, char **argv)
 	ft_putchar('\n');
 	return (0);
 }
+
+void		echo_builtin(t_shenv *e)
+{
+	if (e)
+	{
+		if (1)
+			e->ret = !e->ret ? echo_builtin_cmd(e->cmdc, e->cmdv) : e->ret;
+		else
+			e->ret = !e->ret ? echo_builtin_ash(e->cmdc, e->cmdv) : e->ret;
+	}
+}

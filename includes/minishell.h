@@ -39,13 +39,35 @@
 **     - termios.h
 */
 
+# define EXPCHR(c) ((c) == '~' || (c) == '$')
+
 typedef struct s_mainargs	t_margs;
+typedef struct s_env	t_shenv;
+typedef struct s_bc	t_bc;
+
 struct	s_mainargs
 {
-	int		c;
 	char	**v;
 	char	**e;
 	char	**a;
+	int		c;
+};
+
+struct	s_env
+{
+	t_margs	*m;
+	char	*home;
+	char	**path;
+	char	**envp;
+	char	**cmdv;
+	int		cmdc;
+	int		ret;
+};
+
+struct	s_bc
+{
+	char	*cmd;
+	void	(*f)(t_shenv*);
 };
 
 /*
@@ -74,7 +96,15 @@ struct	s_mainargs
 **  - Others that I think will be useful
 */
 
-int		echo_builtin_ash(int argc, char **argv);
-int		echo_builtin_cmd(int argc, char **argv);
+void	msh_prompt(void);
+void	msh_print_prompt(void);
+void	msh_sigint(int sig);
+
+void	cd_builtin(t_shenv *e);
+void	echo_builtin(t_shenv *e);
+void	env_builtin(t_shenv *e);
+void	exit_builtin(t_shenv *e);
+void	setenv_builtin(t_shenv *e);
+void	unsetenv_builtin(t_shenv *e);
 
 #endif
