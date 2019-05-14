@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/04/22 16:54:43 by callen           ###   ########.fr        #
+#    Updated: 2019/05/13 15:41:47 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,6 +22,8 @@ AFLAGS := $(DFLAGS) -fsanitize=address
 LIBDIR := libft
 INCDIR := includes
 OBJDIR := .obj
+DBGDIR := .dbg
+ASNDIR := .asn
 SRCDIR := srcs
 
 INCFLAGS := -I$(INCDIR) -I$(LIBDIR)/$(INCDIR)
@@ -33,6 +35,8 @@ FRAMWRKS :=
 SRC := main.c bc_echo.c
 
 OBJ := $(addprefix $(OBJDIR)/, $(SRC:.c=.o))
+DBG := $(addprefix $(DBGDIR)/, $(SRC:.c=.o))
+ASN := $(addprefix $(ASNDIR)/, $(SRC:.c=.o))
 
 NRM := $(shell which pynorme)
 ifeq ($(NRM),)
@@ -44,7 +48,7 @@ ifeq ($(NRM),)
 endif
 NORME := $(addsuffix *.h,$(INCDIR)/) $(addsuffix *.c,$(SRCDIR)/)
 
-.PHONY: all debug clean dclean fclean re tags j k asan norme codesize
+.PHONY: all debug j clean dclean k fclean re tags asan f aclean d norme codesize
 
 all: $(NAME)
 
@@ -53,21 +57,11 @@ $(NAME): $(OBJDIR) $(OBJ)
 	@$(CC) $(INCFLAGS) $(LIBFLAGS) -o $(NAME) $(OBJ)
 	@echo "Compiled $(NAME)"
 
-j: debug
+$(addprefix $(OBJDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
+	@$(CC) $(INCFLAGS) $(CFLAGS) -c -o $@ $<
 
-k: fclean dclean
-
-asan:
-	@make -sC libft asan
-	@$(CC) $(AFLAGS) $(INCFLAGS) $(ASANLIBS) -o $(ANAM) $(addprefix $(SRCDIR)/, $(SRC))
-
-debug:
-	@make -sC libft debug
-	@$(CC) $(DFLAGS) $(INCFLAGS) $(DEBGLIBS) -o $(DNAM) $(addprefix $(SRCDIR)/, $(SRC))
-
-dclean:
-	@make -C libft dclean
-	rm -rf $(DNAM) $(DNAM).dSYM $(ANAM) $(ANAM).dSYM
+$(OBJDIR):
+	@mkdir -p $(OBJDIR)
 
 clean:
 	make -C libft clean
@@ -79,14 +73,44 @@ fclean: clean
 
 re: fclean all
 
+f: asan
+
+d: aclean
+
+asan: $(ASNDIR) $(ASN)
+	@make -sC libft asan
+	@$(CC) $(AFLAGS) $(INCFLAGS) $(ASANLIBS) -o $(ANAM) $(ASN)
+
+$(addprefix $(ASNDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
+	$(CC) $(AFLAGS) $(INCFLAGS) -c -o $@ $<
+
+$(ASNDIR):
+	@mkdir -p $(ASNDIR)
+
+aclean:
+	@macke -C libft aclean
+	rm -rf $(ANAM) $(ANAM).dSYM
+
+j: debug
+
+k: dclean
+
+debug: $(DBGDIR) $(DBG)
+	@make -sC libft debug
+	@$(CC) $(DFLAGS) $(INCFLAGS) $(DEBGLIBS) -o $(DNAM) $(addprefix $(SRCDIR)/, $(SRC))
+
+$(addprefix $(DBGDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
+	$(CC) $(DFLAGS) $(INCFLAGS) -c -o $@ $<
+
+$(DBGDIR):
+	@mkdir -p $(DBGDIR)
+
+dclean:
+	@make -C libft dclean
+	rm -rf $(DNAM) $(DNAM).dSYM
+
 tags:
 	ctags $(addsuffix *.h,$(INCDIR)/) $(addsuffix *.c,$(SRCDIR)/)
-
-$(addprefix $(OBJDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
-	@$(CC) $(INCFLAGS) $(CFLAGS) -o $@ -c $<
-
-$(OBJDIR):
-	@mkdir -p $(OBJDIR)
 
 norme:
 	@$(NRM) $(NORME)

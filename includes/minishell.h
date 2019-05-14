@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/04/22 18:59:21 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/13 16:35:23 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,27 +15,27 @@
 
 /*
 ** Allowed Functions:
-**    malloc, free
+**    malloc(), free()
 **     - stdlib.h
-**    access
+**    access()
 **     - unistd.h
-**    open, close, read, write
+**    open(), close(), read(), write()
 **     - fcntl.h
-**    opendir, readdir, closedir
+**    opendir(), readdir(), closedir()
 **     - dirent.h
-**    getcwd, chdir
+**    getcwd(), chdir()
 **     - unistd.h
-**    stat, lstat, fstat
+**    stat(), lstat(), fstat()
 **     - sys/stat.h
-**    fork, execve
+**    fork(), execve()
 **     - unistd.h
-**    wait, waitpid, wait3, wait4
+**    wait(), waitpid(), wait3(), wait4()
 **     - wait.h
-**    signal, kill
+**    signal(), kill()
 **     - signal.h
-**    exit
+**    exit()
 **  For bonuses
-**    tcgetattr
+**    tcgetattr()
 **     - termios.h
 */
 
@@ -60,6 +60,7 @@ struct	s_env
 	char	**path;
 	char	**envp;
 	char	**cmdv;
+	int		dl;
 	int		cmdc;
 	int		ret;
 };

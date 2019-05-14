@@ -6,12 +6,12 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/04/23 00:23:19 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/13 21:00:44 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
-#include "libft.h"
+#include "../includes/minishell.h"
+#include "../libft/includes/libft.h"
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -22,19 +22,19 @@ void		envdump(t_shenv *e)
 {
 	int	i;
 
-	ft_printf("(int) m->c = %d\n", e->m->c);
+	ft_printf("m->c = %d\n", e->m->c);
 	i = -1;
-	ft_printf("(char **) m->v = %p\n", e->m->v);
+	ft_printf("m->v = %p\n", e->m->v);
 	while (++i < e->m->c)
-		ft_printf("(char *) m->v[%d] = %s\n", i, e->m->v[i]);
+		ft_printf("m->v[%d] = %s\n", i, e->m->v[i]);
 	i = -1;
-	ft_printf("(char **) m->e = %p\n", e->m->e);
+	ft_printf("m->e = %p\n", e->m->e);
 	while (e->m->e && e->m->e[++i])
-		ft_printf("(char *) m->e[%d] = %s\n", i, e->m->e[i]);
+		ft_printf("m->e[%d] = %s\n", i, e->m->e[i]);
 	i = -1;
-	ft_printf("(char **) m->a = %p\n", e->m->a);
+	ft_printf("m->a = %p\n", e->m->a);
 	while (e->m->a && e->m->a[++i])
-		ft_printf("(char *) m->a[%d] = %s\n", i, e->m->a[i]);
+		ft_printf("m->a[%d] = %s\n", i, e->m->a[i]);
 };
 
 void		env_builtin(t_shenv *e)
@@ -385,7 +385,6 @@ void		msh_prompt(void)
 	while (1)
 	{
 		msh_print_prompt();
-		// ft_printf("msh$ ");
 		if ((b = get_next_line(0, &ln)) > 0)
 		{
 			e->cmdv = ft_strsplit(ln, ' ');
