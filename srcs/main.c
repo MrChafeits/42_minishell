@@ -6,12 +6,12 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/13 21:00:44 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/14 13:01:35 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/minishell.h"
-#include "../libft/includes/libft.h"
+#include "minishell.h"
+#include "libft.h"
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>

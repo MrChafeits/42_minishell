@@ -64,3 +64,4 @@ tags
 minishell
 d_minishell
 a_minishell
+.dir-locals*.el
