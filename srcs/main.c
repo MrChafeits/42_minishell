@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/14 13:01:35 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/15 21:01:15 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,7 +266,7 @@ char		*msh_readline(void)
 		exit(g_shenv->ret);
 	return (ln);
 }
-#define TOKSEP "\t\r\n\a \\:;=$-~"
+#define TOKSEP "\t\r\n\a \\;"
 
 static const char	g_toksep[] = {
 	0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
