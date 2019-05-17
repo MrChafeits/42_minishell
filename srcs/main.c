@@ -6,11 +6,12 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/15 21:01:15 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/16 22:12:46 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include "msh_strvec.h"
 #include "libft.h"
 #include <stdio.h>
 #include <signal.h>
@@ -56,45 +57,6 @@ void		exit_builtin(t_shenv *e)
 		st = e->ret;
 	ft_dprintf(2, "exit\n");
 	exit(st);
-}
-
-int			len_strtab(char **t)
-{
-	register int i;
-
-	i = 0;
-	while (t && t[i])
-		++i;
-	return (i);
-}
-
-char		**dup_strtab(char **t)
-{
-	register int	i;
-	int				len;
-	char			**ret;
-
-	len = len_strtab(t);
-	if (!(ret = malloc(sizeof(char*) * (len + 1))))
-		return (NULL);
-	i = -1;
-	while (++i < len)
-		if (!(ret[i] = ft_strdup(t[i])))
-			return (NULL);
-	return (ret);
-}
-
-void		del_strtab(char ***t)
-{
-	register int i;
-
-	if (t && *t && **t)
-	{
-		i = -1;
-		while ((*t)[++i])
-			ft_memdel((void**)&(*t)[i]);
-		ft_memdel((void**)&(*t));
-	}
 }
 
 void		cd_builtin(t_shenv *e)
@@ -245,7 +207,7 @@ void		msh_print_prompt(void)
 	char	*buf;
 	size_t	idx;
 
-	buf = ft_strnew(4097);
+	buf = ft_strnew(4097); // NULL check maybe?
 	getcwd(buf, 4096);
 	idx = ft_strlen(g_shenv->home);
 	if (ft_strnequ(buf, g_shenv->home, idx))
@@ -254,7 +216,7 @@ void		msh_print_prompt(void)
 		ft_printf("%s msh$ ", buf + idx - 1);
 	else
 		ft_printf("%s msh$ ", buf);
-	ft_memdel((void**)&buf);
+	free(buf);
 }
 
 char		*msh_readline(void)
@@ -266,6 +228,7 @@ char		*msh_readline(void)
 		exit(g_shenv->ret);
 	return (ln);
 }
+
 #define TOKSEP "\t\r\n\a \\;"
 
 static const char	g_toksep[] = {
@@ -274,6 +237,7 @@ static const char	g_toksep[] = {
 	0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B,
 	0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x00
 };
+
 #define TOK_BUFSZ (64)
 
 void		msh_panic(char *msg)
@@ -282,6 +246,7 @@ void		msh_panic(char *msg)
 	exit(1);
 }
 
+//subst.c subst.h
 char		*msh_expand(char *token)
 {
 	char	*tmp;
@@ -301,6 +266,7 @@ char		*msh_expand(char *token)
 	return (ret);
 }
 
+//subst.c subst.h
 char		**msh_tokenize(char *str)
 {
 	char	**tokens;
@@ -344,14 +310,14 @@ void		msh_parse(char **inpt)
 		if (*tkns)
 		{
 			g_shenv->cmdv = tkns;
-			g_shenv->cmdc = len_strtab(tkns);
+			g_shenv->cmdc = strvec_len(tkns);
 			msh_exec(g_shenv);
-			del_strtab(&tkns);
+			strvec_dispose(tkns);
 		}
 		else
 			free(tkns);
 	}
-	del_strtab(&inpt);
+	strvec_dispose(inpt);
 }
 
 void		msh_repl(void)
@@ -370,7 +336,7 @@ void		msh_repl(void)
 		boy = ft_strsplit(ln, ';');
 		ft_strdel(&ln);
 		msh_parse(boy);
-		del_strtab(&boy);
+		strvec_dispose(boy);
 	}
 }
 
@@ -389,9 +355,9 @@ void		msh_prompt(void)
 		{
 			e->cmdv = ft_strsplit(ln, ' ');
 			ft_memdel((void**)&ln);
-			e->cmdc = len_strtab(e->cmdv);
+			e->cmdc = strvec_len(e->cmdv);
 			e->ret = !e->ret ? msh_exec(e) : e->ret;
-			del_strtab(&e->cmdv);
+			strvec_dispose(e->cmdv);
 		}
 		else if (!b)
 			break ;

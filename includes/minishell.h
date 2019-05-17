@@ -6,13 +6,14 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/13 16:35:23 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/16 21:57:50 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
+# include "msh_strvec.h"
 /*
 ** Allowed Functions:
 **    malloc(), free()
@@ -43,7 +44,7 @@
 
 typedef struct s_mainargs	t_margs;
 typedef struct s_env	t_shenv;
-typedef struct s_bc	t_bc;
+typedef struct s_bc	t_c;
 
 struct	s_mainargs
 {
@@ -60,6 +61,7 @@ struct	s_env
 	char	**path;
 	char	**envp;
 	char	**cmdv;
+	t_wlst	*list;
 	int		dl;
 	int		cmdc;
 	int		ret;

@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/05/13 15:41:47 by callen           ###   ########.fr        #
+#    Updated: 2019/05/16 13:19:15 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,6 +39,7 @@ DBG := $(addprefix $(DBGDIR)/, $(SRC:.c=.o))
 ASN := $(addprefix $(ASNDIR)/, $(SRC:.c=.o))
 
 NRM := $(shell which pynorme)
+
 ifeq ($(NRM),)
 	NRM = "$(shell \
 	if [ -d ~/.usr_bin ] && [ -x ~/.usr_bin/norminette.py ];\
@@ -46,10 +47,10 @@ ifeq ($(NRM),)
 		echo ~/.usr_bin/norminette.py;\
 	fi)"
 endif
+
 NORME := $(addsuffix *.h,$(INCDIR)/) $(addsuffix *.c,$(SRCDIR)/)
 
-.PHONY: all debug j clean dclean k fclean re tags asan f aclean d norme codesize
-
+.PHONY: all
 all: $(NAME)
 
 $(NAME): $(OBJDIR) $(OBJ)
@@ -63,20 +64,26 @@ $(addprefix $(OBJDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
 $(OBJDIR):
 	@mkdir -p $(OBJDIR)
 
+.PHONY: clean
 clean:
 	make -C libft clean
 	rm -Rf $(OBJDIR)
 
+.PHONY: fclean
 fclean: clean
 	make -sC libft fclean
 	rm -f $(NAME)
 
+.PHONY: re
 re: fclean all
 
+.PHONY: f
 f: asan
 
+.PHONY: d
 d: aclean
 
+.PHONY: asan
 asan: $(ASNDIR) $(ASN)
 	@make -sC libft asan
 	@$(CC) $(AFLAGS) $(INCFLAGS) $(ASANLIBS) -o $(ANAM) $(ASN)
@@ -87,14 +94,18 @@ $(addprefix $(ASNDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
 $(ASNDIR):
 	@mkdir -p $(ASNDIR)
 
+.PHONY: aclean
 aclean:
 	@macke -C libft aclean
 	rm -rf $(ANAM) $(ANAM).dSYM
 
+.PHONY: j
 j: debug
 
+.PHONY: k
 k: dclean
 
+.PHONY: debug
 debug: $(DBGDIR) $(DBG)
 	@make -sC libft debug
 	@$(CC) $(DFLAGS) $(INCFLAGS) $(DEBGLIBS) -o $(DNAM) $(addprefix $(SRCDIR)/, $(SRC))
@@ -105,16 +116,20 @@ $(addprefix $(DBGDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
 $(DBGDIR):
 	@mkdir -p $(DBGDIR)
 
+.PHONY: dclean
 dclean:
 	@make -C libft dclean
 	rm -rf $(DNAM) $(DNAM).dSYM
 
+.PHONY: tags
 tags:
 	ctags $(addsuffix *.h,$(INCDIR)/) $(addsuffix *.c,$(SRCDIR)/)
 
+.PHONY: norme
 norme:
 	@$(NRM) $(NORME)
 
+.PHONY: codesize
 codesize:
 	@printf "Lines of code: "
 	@cat $(NORME) | grep -Ev '(^\/\*|^\*\*|^\*\/$$|^$$|\*\/)' | wc -l | cut -d' ' -f7
