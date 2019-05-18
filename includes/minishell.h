@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/16 21:57:50 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/17 19:12:46 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@
 
 typedef struct s_mainargs	t_margs;
 typedef struct s_env	t_shenv;
-typedef struct s_bc	t_c;
+typedef struct s_bc	t_bc;
 
 struct	s_mainargs
 {
@@ -62,9 +62,13 @@ struct	s_env
 	char	**envp;
 	char	**cmdv;
 	t_wlst	*list;
+	int		wid;
+	int		pwd_ex;
+	int		st;
 	int		dl;
 	int		cmdc;
 	int		ret;
+	int		exit_called;
 };
 
 struct	s_bc

@@ -37,7 +37,7 @@ typedef struct s_varctx
 
 // What a shell variable looks like
 typedef struct s_var *t_shvarvfunc(struct s_var *v);
-typedef struct s_var *t_shvarafunc(struct s_var *v, char *a, t_arid i, char *b);
+typedef struct s_var *t_shvarafunc(struct s_var *v, char *a, int i, char *b);
 
 /* For the future */
 union u_val
