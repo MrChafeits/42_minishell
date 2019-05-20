@@ -9,6 +9,29 @@
 # define MP_RMDOT 0x04
 # define MP_IGNDOT 0x08
 #endif
+int			g_nolinks = 0;
+char		*g_the_current_working_directory = NULL;
+
+char		*get_working_directory(const char *for_whom)
+{
+	if (g_nolinks)
+	{
+		free(g_the_current_working_directory);
+		g_the_current_working_directory = NULL;
+	}
+	if (g_the_current_working_directory == 0)
+	{
+		g_the_current_working_directory = getcwd(0, 0);
+		if (g_the_current_working_directory == 0)
+		{
+			ft_dprintf(2, "%s: error retrieving current directory: %s: %s\n",
+				(for_whom && *for_whom) ? for_whom : "get_name_for_error()",
+				"bash_getcwd_errstr", "did the bad");
+			return (NULL);
+		}
+	}
+	return (SAVESTR(g_the_current_working_directory));
+}
 
 int			absolute_pathname(const char *str)
 {
@@ -113,7 +136,7 @@ char		*get_string_value(const char *var)
 			ret = ft_strdup(ft_strchr(g_shenv->envp[i], '=') + 1);
 	return (ret);
 }
-int g_nolinks = 0;
+
 static int	change_to_directory(const char *newdir)
 {
 	(void)newdir;
@@ -127,7 +150,10 @@ void		cd_builtin(t_shenv *e)
 	/* char	*path; */
 	/* char	*tmp; */
 	/* int		path_index; */
+	int		no_symlinks;
+
 	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: start[%d](%s)]\n",e->cmdc,*e->cmdv) : 0;
+	no_symlinks = g_nolinks;
 	if (e->cmdc == 1)
 		dirname = get_string_value("HOME");
 	else if (e->cmdc == 2 && ft_strequ("-", e->cmdv[1]))
@@ -137,6 +163,7 @@ void		cd_builtin(t_shenv *e)
 	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: dirname(%s)]\n",dirname) : 0;
 	if (change_to_directory(dirname))
 	{
+		return;
 	}
 	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: end]\n") : 0;
 }
