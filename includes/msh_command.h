@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/16 19:07:27 by callen            #+#    #+#             */
-/*   Updated: 2019/05/13 20:46:16 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/19 20:02:07 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,5 +101,9 @@ struct	s_wlst
 	t_wlst	*next;
 	t_wdtk	*word;
 };
+
+/*
+** Shell Command Structs TODO
+*/
 
 #endif

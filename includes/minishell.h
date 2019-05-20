@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/17 19:12:46 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/19 18:43:13 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,10 @@
 */
 
 # define EXPCHR(c) ((c) == '~' || (c) == '$')
+# define ABSPATH(x) ((x)[0] == '/')
+# define RELPATH(x) ((x)[0] != '/')
+# define ISDIRSEP(c) ((c) == '/')
+# define PATHSEP(c) (ISDIRSEP(c) || (c) == 0)
 
 typedef struct s_mainargs	t_margs;
 typedef struct s_env	t_shenv;
@@ -62,6 +66,7 @@ struct	s_env
 	char	**envp;
 	char	**cmdv;
 	t_wlst	*list;
+	int		envplen;
 	int		wid;
 	int		pwd_ex;
 	int		st;
@@ -103,9 +108,12 @@ struct	s_bc
 **  - Others that I think will be useful
 */
 
-void	msh_prompt(void);
+int		g_dbg;
+t_shenv	*g_shenv;
+
+int		msh_prompt(void);
 void	msh_print_prompt(void);
-void	msh_sigint(int sig);
+void	msh_sigint(int s);
 
 void	cd_builtin(t_shenv *e);
 void	echo_builtin(t_shenv *e);
@@ -113,5 +121,9 @@ void	env_builtin(t_shenv *e);
 void	exit_builtin(t_shenv *e);
 void	setenv_builtin(t_shenv *e);
 void	unsetenv_builtin(t_shenv *e);
+
+char	*get_string_value(const char *v);
+char	*get_working_directory(const char *v);
+char	*sh_makepath(const char *p, const char *d, int f);
 
 #endif
