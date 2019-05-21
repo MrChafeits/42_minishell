@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/19 20:03:41 by callen            #+#    #+#             */
-/*   Updated: 2019/05/20 13:04:02 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/20 22:23:37 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 //#include "hashlib.h"
 //#include "conftypes.h"
 
-typedef struct s_varctx
+typedef struct			s_varctx
 {
 	char			*name; //empty or NULL means global context
 	int				scope; // 0 means global context
@@ -28,7 +28,7 @@ typedef struct s_varctx
 	struct s_varctx	*up; //previous function calls
 	struct s_varctx	*down;  // down towards global scope
 	t_htab			*table; //variables at this scope
-}				t_varctx;
+}						t_varctx;
 
 // flags for t_varctx->flags
 # define VC_HASLOCAL 0x01
@@ -50,11 +50,11 @@ typedef struct s_varctx
 # define VC_HASTMPVARS(vc) (((vc)->flags & VC_HASTMPVAR) != 0)
 
 // What a shell variable looks like
-typedef struct s_var *t_shvarvfunc(struct s_var *v);
-typedef struct s_var *t_shvarafunc(struct s_var *v, char *a, int i, char *b);
+typedef struct s_var	*t_shvarvfunc(struct s_var *v);
+typedef struct s_var	*t_shvarafunc(struct s_var *v, char *a, int i, char *b);
 
 /* For the future */
-union u_val
+union					u_val
 {
 	char		*s; /* string value */
 	intmax_t	i; /* int value */
@@ -67,7 +67,7 @@ union u_val
 	void		*o; /* opaque data for future use */
 };
 
-typedef struct	s_var
+typedef struct			s_var
 {
 	char			*name; /* Symbol that the user types */
 	char			*value; /* Value that is returned */
@@ -76,14 +76,14 @@ typedef struct	s_var
 	t_shvarvfunc	*asignf; /* Function called when this special variable is assigned a value in bind_variable */
 	int				attr; /* export, readonly, array, invisible... */
 	int				ctx; /* Which context this variable belongs to */
-}				t_var; /* SHELL_VAR */
+}						t_var; /* SHELL_VAR */
 
-typedef struct	s_vlst
+typedef struct			s_vlst
 {
 	t_var		**list;
 	int			list_size; /* allocated size */
 	int			list_len; /* current number of entries */
-}				t_vlst;
+}						t_vlst;
 /* The various attributes that a given variable can have */
 /* First, the user-visible attributes */
 # define ATT_EXPORTED   0x0000001 /* export to environment */
@@ -117,5 +117,117 @@ typedef struct	s_vlst
 # define ATT_PROPAGATE  0x0200000 /* propagate to previous scope */
 
 # define ATTMASK_SCOPE  0x0f00000
-//TODO
+
+# define EXPORTED_P(var) ((((var)->attr) & (ATT_EXPORTED)))
+# define READONLY_P(var) ((((var)->attr) & (ATT_READONLY)))
+# define ARRAY_P(var) ((((var)->attr) & (ATT_ARRAY)))
+# define FUNCTION_P(var) ((((var)->attr) & (ATT_FUNCTION)))
+# define INTEGER_P(var) ((((var)->attr) & (ATT_INTEGER)))
+# define LOCAL_P(var) ((((var)->attr) & (ATT_LOCAL)))
+# define ASSOC_P(var) ((((var)->attr) & (ATT_ASSOC)))
+# define TRACE_P(var) ((((var)->attr) & (ATT_TRACE)))
+# define UPPERCASE_P(var) ((((var)->attr) & (ATT_UPPERCASE)))
+# define LOWERCASE_P(var) ((((var)->attr) & (ATT_LOWERCASE)))
+# define CAPCASE_P(var) ((((var)->attr) & (ATT_CAPCASE)))
+# define NAMEREF_P(var) ((((var)->attr) & (ATT_NAMEREF)))
+
+# define INVISIBLE_P(var) ((((var)->attr) & (ATT_INVISIBLE)))
+# define NON_UNSETTABLE_P(var) ((((var)->attr) & (ATT_NOUNSET)))
+# define NOASSIGN_P(var) ((((var)->attr) & (ATT_NOASSIGN)))
+# define IMPORTED_P(var) ((((var)->attr) & (ATT_IMPORTED)))
+# define SPECIALVAR_P(var) ((((var)->attr) & (ATT_SPECIAL)))
+# define NOFREE_P(var) ((((var)->attr) & (ATT_NOFREE)))
+# define REGEN_P(var) ((((var)->attr) & (ATT_REGENERATE)))
+
+# define TEMPVAR_P(var) ((((var)->attr) & (ATT_TEMPVAR)))
+# define PROPAGATE_P(var) ((((var)->attr) & (ATT_PROPAGATE)))
+
+/* Variable names: lvalues */
+# define NAME_CELL(var) ((var)->name)
+
+/* Accessing variable values: rvalues */
+# define VALUE_CELL(var) ((var)->value)
+# define FUNCTION_CELL(var) (t_cmd*)((var)->value)
+# define ARRAY_CELL(var) (t_arr*)((var)->value)
+# define ASSOC_CELL(var) (t_htab*)((var)->value)
+# define NAMEREF_CELL(var) ((var)->value) /* so it can change later */
+
+# define NAMEREF_MAX 8 /* only  levels of nameref indirection */
+
+# define VAR_ISSET(var) ((var)->value != 0)
+# define VAR_ISUNSET(var) ((var)->value == 0)
+# define VAR_ISNULL(var) ((var)->value && *(var)->value == 0)
+
+/* Assigning variable values: lvalues */
+# define VAR_SETVALUE(var, str) ((var)->value = (str))
+# define VAR_SETFUNC(var, func) ((var)->value = (char*)(func))
+# define VAR_SETARRAY(var, arr) ((var)->value = (char*)(arr))
+# define VAR_SETASSOC(var, arr) ((var)->value = (char*)(arr))
+# define VAR_SETREF(var, str) ((var)->value = (str))
+
+/* Make VAR be auto-exported */
+# define SET_AUTO_EXPORT(var) ((var)->attr |= ATT_EXPORTED; g_anm = 1;)
+# define SETVARATTR(v, a, u) ((!u) ? ((v)->attr |= (a)) : ((v)->attr &= ~(a)))
+# define VSETATTR(var, attr) ((var)->attr |= (attr))
+# define VUNSETATTR(var, attr) ((var)->attr &= ~(attr))
+# define VGETFLAGS(var) ((var)->attr)
+# define VSETFLAGS(var, flags) ((var)->attr = (flags))
+# define VCLRFLAGS(var) ((var)->attr = 0)
+
+/* Macros to perform various operations on 'exportstr' member of a t_var. */
+# define CLEAR_EXPORTSTR(var) (var)->exportstr = NULL
+# define COPY_EXPORTSTR(var) ((var)->exportstr?SAVESTR((var)->exportstr):NULL)
+# define SET_EXPORTSTR(var, val) (var)->exportstr = (val)
+# define SAVE_EXPORTSTR(var, val) (var)->exportstr = (val) ? SAVESTR(val):NULL
+# define FREE_EXPORTSTR(var) (if((var)->exportstr)free((var)->exportstr);)
+# define CACHE_IMPORTSTR(var, val) (var)->exportstr = SAVESTR(val)
+# define NULL_EXPSTR(var) (if((var)->exportstr){(var)->exportstr=NULL;})
+# define INVAL_EXPORTSTR(var) {FREE_EXPORTSTR(var);NULL_EXPSTR(var);}
+# define IFSNAME(s) ((s)[0]=='I'&&(s)[1]=='F'&&(s)[2]=='S'&&(s)[3]==0)
+# define MKLOC_INHERIT 0x01
+
+/* Special value for nameref with invalid value for creation or assignment. */
+extern t_var			g_nameref_inval_val;
+# define INVALID_NAMEREF_VALUE (void*)&g_nameref_inval_val
+
+/* Stuff for hacking variables. */
+typedef int				t_shvarmapfunc(t_var*);
+
+/* Where we keep the variables and functions */
+extern t_varctx			*g_global_variables;
+extern t_varctx			*g_shell_variables;
+
+extern t_htab			*g_shell_functions;
+extern t_htab			*g_temporary_env;
+
+extern int				g_variable_context;
+extern char				*g_dollar_vars[];
+extern char				**g_export_env;
+
+extern int				g_tempenv_assign_error;
+extern int				g_array_needs_making;
+extern int				g_shell_level;
+
+/* XXX */
+extern t_wlst			*g_rest_of_args;
+extern pid_t			g_dollar_dollar_pid;
+
+extern void				init_shell_vars(char **v, int n);
+
+extern int				validate_inherited_val(t_var *v, int n);
+
+extern t_var			*set_if_not(char *a, char *b);
+
+extern void				sh_set_lines_and_columns(int y, int x);
+extern void				set_pwd(void);
+extern void				set_ppid(void);
+extern void				make_funcname_visible(int n);
+
+extern t_var			*var_lookup(const char* s, t_varctx *c);
+
+extern t_var			*find_function(const char *s);
+//TODO: Holy prototypes my guy
+extern t_var			*bind_variable(const char *n, char *v, int f);
+void					update_export_env_inplace(char *p, int l, char *v);
+
 #endif

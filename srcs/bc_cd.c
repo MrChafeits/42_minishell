@@ -1,4 +1,5 @@
 #include "minishell.h"
+#include "msh_variables.h"
 #include "ft_stdio.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -20,6 +21,8 @@
 /* lib/sh/stringlist.c */
 //TODO
 
+extern const char *const g_msh_getcwd_errstr;
+
 /* global variables */
 char		*g_the_current_working_directory = NULL;
 int			g_nolinks = 0;
@@ -36,6 +39,24 @@ static void	resetxattr(void)
 			close(g_xattrfd);
 	g_xattrfd = -1;
 }
+
+/* Just set $PWD, don't change OLDPWD. Used by 'pwd -P' in posix mode. * /
+static int	setpwd(char *dirname)
+{
+	int			old_anm;
+	t_var		*tvar;
+
+	old_anm = g_array_needs_making;
+	tvar = bind_variable("PWD", dirname ? dirname : "", 0);
+	if (tvar && READONLY_P(tvar))
+		return (1);
+	if (tvar && old_anm == 0 && g_array_needs_making && EXPORTED_P(tvar))
+	{
+		update_export_env_inplace("PWD=", 4, dirname ? dirname : "");
+		g_array_needs_making = 0;
+	}
+	return (0);
+}*/
 
 char		*get_working_directory(const char *for_whom)
 {
@@ -504,16 +525,91 @@ static int	change_to_directory(char *newdir, int nolinks, int xattr)
 	return (r);
 }
 
+/* static int	bindpwd(int links) */
+/* { */
+/* 	(void)links; */
+/* 	return (0); */
+/* } */
+
+/* #define LCD_DOVARS 0x001 */
+/* #define LCD_DOSPELL 0x002 */
+/* #define LCD_PRINTPATH 0x004 */
+/* #define LCD_FREEDIRNAME 0x008 */
+
+/* int			cd_blabbo_builtin(t_wlst *list) */
+/* { */
+/* 	char	*dirname; */
+/* 	char	*cdpath; */
+/* 	char	*path; */
+/* 	char	*temp; */
+/* 	int		path_index; */
+/* 	int		no_symlinks; */
+/* 	int		opt; */
+/* 	int		lflag; */
+/* 	int		e; */
+
+/* 	g_dbg?ft_dprintf(2,"[DBG:cd_builtin:start[%d](%s)]\n",g_shenv->cmdc,*g_shenv->cmdv):0; */
+/* 	no_symlinks = g_nolinks; */
+/* 	/\* list = loptend; *\/ */
+/* 	/\* lflag = (cdable_vars ? LCD_DOVARS : 0) | *\/ */
+/* 	/\* 	((interactive && cdspelling) ? LCD_DOSPELL : 0); *\/ */
+/* 	/\* if (g_eflag && no_symlinks == 0) *\/ */
+/* 	/\* 	g_eflag = 0; *\/ */
+/* 	if (list == 0) */
+/* 	g_xattrflag = 0; */
+/* 	if (g_shenv->cmdc == 1) */
+/* 		dirname = get_string_value("HOME"); */
+/* 	else if (g_shenv->cmdc == 2 && ft_strequ("-", g_shenv->cmdv[1])) */
+/* 		dirname = get_string_value("OLDPWD"); */
+/* 	else */
+/* 		dirname = g_shenv->cmdv[1]; */
+/* 	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: dirname(%s)]\n",dirname) : 0; */
+/* 	if (change_to_directory(dirname, no_symlinks, g_xattrflag)) */
+/* 	{ */
+/* 		return (bindpwd(no_symlinks)); */
+/* 	} */
+/* 	if (lflag & LCD_DOVARS) */
+/* 	{ */
+/* 		temp = get_string_value(dirname); */
+/* 		if (temp && change_to_directory(temp, no_symlinks, g_xattrflag)) */
+/* 		{ */
+/* 			ft_printf("%s\n", temp); */
+/* 			return (bindpwd(no_symlinks)); */
+/* 		} */
+/* 	} */
+/* 	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: end]\n") : 0; */
+/* } */
+//TODO: update $PWD and $OLDPWD when cd_builtin is called
+void		folderoni(char *path)
+{
+	int		s;
+	int		r;
+	char	*cdpath;
+	char	*cur;
+
+	cur = ft_strnew(4096);
+	getcwd(cur, 4096);
+	if (path && path[0] == '~')
+	{
+		cdpath = ft_strjoin_free(g_shenv->home, path + 1, 'R');
+		path = cdpath;
+		path = ft_strcat(cur, path);
+	}
+	else if (!path)
+		path = g_shenv->home;
+	if ((r = access(path, F_OK)) == -1)
+		ft_dprintf(2, "minishell: cd: %s: No such file or directory\n", path);
+	else if ((r = access(path, R_OK)) == -1)
+		ft_dprintf(2, "minishell: cd: %s: Permission denied\n", path);
+	else
+		s = chdir(path);
+	free(cur);
+}
 void		cd_builtin(t_shenv *e)
 {
 	char	*dirname;
-	char	*cdpath;
-	char	*path;
-	char	*tmp;
-	int		path_index;
+	/* int		path_index; */
 	int		no_symlinks;
-	int		opt;
-	int		ee;
 
 	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: start[%d](%s)]\n",e->cmdc,*e->cmdv) : 0;
 	no_symlinks = g_nolinks;
@@ -525,13 +621,12 @@ void		cd_builtin(t_shenv *e)
 	else
 		dirname = e->cmdv[1];
 	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: dirname(%s)]\n",dirname) : 0;
-	if (change_to_directory(dirname, no_symlinks, g_xattrflag))
-	{
-		return;
-	}
+	if (1)
+		folderoni(dirname);
+	else
+		change_to_directory(dirname, 0, 0);
 	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: end]\n") : 0;
 }
-
 void		pwd_builtin(t_shenv *e)
 {
 	g_dbg ? ft_dprintf(2, "[DBG: pwd_builtin: start(%s)]\n", *e->cmdv) : 0;

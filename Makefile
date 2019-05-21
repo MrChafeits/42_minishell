@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/05/20 11:54:44 by callen           ###   ########.fr        #
+#    Updated: 2019/05/21 00:06:15 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -100,7 +100,7 @@ $(ASNDIR):
 
 .PHONY: aclean
 aclean:
-	@make -C libft aclean
+	@make -C libft dclean
 	rm -rf $(ANAM) $(ANAM).dSYM
 
 .PHONY: j

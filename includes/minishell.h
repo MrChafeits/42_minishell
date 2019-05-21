@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/20 17:19:47 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/20 19:15:21 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define MINISHELL_H
 
 # include "msh_strvec.h"
+
 /*
 ** Allowed Functions:
 **    malloc(), free()
