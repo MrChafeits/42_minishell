@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/19 20:03:41 by callen            #+#    #+#             */
-/*   Updated: 2019/05/19 20:03:42 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/20 13:04:02 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ typedef struct	s_var
 	t_shvarvfunc	*asignf; /* Function called when this special variable is assigned a value in bind_variable */
 	int				attr; /* export, readonly, array, invisible... */
 	int				ctx; /* Which context this variable belongs to */
-}				t_var;
+}				t_var; /* SHELL_VAR */
 
 typedef struct	s_vlst
 {

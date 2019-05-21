@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/19 17:42:29 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/20 12:00:29 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,8 @@ int			msh_exec_path(t_shenv *e)
 		}
 		exit(ex);
 	}
+	else if (pid < 0)
+		ft_dprintf(2, "minishell: %s: Error forking\n", *e->cmdv);
 	else
 		i = wait(&e->ret);
 	g_dbg ? ft_dprintf(2, "[DBG: msh_exec_path: end:ret(%d)i(%d)ex(%d)]\n", e->ret,i,ex) : 0;
@@ -154,7 +156,6 @@ int			msh_exec_pwd(t_shenv *e)
 	{
 		if ((ex = execve(*e->cmdv, e->cmdv, e->m->e)) == -1)
 			exit(127);
-		// ft_dprintf(2, "minishell: %s: Child process error\n", *e->cmdv);
 		g_dbg ? ft_dprintf(2, "[DBG: msh_exec_pwd: child ex(%d)]\n", ex) : 0;
 		exit((e->pwd_ex = ex));
 	}

@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/05/19 20:26:58 by callen           ###   ########.fr        #
+#    Updated: 2019/05/20 11:54:44 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -85,6 +85,7 @@ f: asan
 
 .PHONY: d
 d: aclean
+	rm -rf $(ASNDIR)
 
 .PHONY: asan
 asan: $(ASNDIR) $(ASN)
@@ -99,7 +100,7 @@ $(ASNDIR):
 
 .PHONY: aclean
 aclean:
-	@make -C libft dclean
+	@make -C libft aclean
 	rm -rf $(ANAM) $(ANAM).dSYM
 
 .PHONY: j
@@ -107,6 +108,7 @@ j: debug
 
 .PHONY: k
 k: dclean
+	rm -rf $(DBGDIR)
 
 .PHONY: debug
 debug: $(DBGDIR) $(DBG)
@@ -126,7 +128,7 @@ dclean:
 
 .PHONY: tags
 tags:
-	ctags $(addsuffix *.h,$(INCDIR)/) $(addsuffix *.c,$(SRCDIR)/)
+	ctags -R .
 
 .PHONY: norme
 norme:

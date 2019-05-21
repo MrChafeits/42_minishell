@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/19 18:43:13 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/20 17:19:47 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,11 @@
 # define EXPCHR(c) ((c) == '~' || (c) == '$')
 # define ABSPATH(x) ((x)[0] == '/')
 # define RELPATH(x) ((x)[0] != '/')
+# define ROOTEDPATH(x) (ABSPATH(x))
+# define DIRSEP '/'
 # define ISDIRSEP(c) ((c) == '/')
 # define PATHSEP(c) (ISDIRSEP(c) || (c) == 0)
+# define FREE(s) if (s) free(s);
 
 typedef struct s_mainargs	t_margs;
 typedef struct s_env	t_shenv;
@@ -108,6 +111,7 @@ struct	s_bc
 **  - Others that I think will be useful
 */
 
+int		g_errno;
 int		g_dbg;
 t_shenv	*g_shenv;
 
