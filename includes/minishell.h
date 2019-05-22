@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/20 19:15:21 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/21 16:59:40 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,20 +64,21 @@ struct	s_mainargs
 
 struct	s_env
 {
-	t_margs	*m;
-	char	*home;
-	char	**path;
-	char	**envp;
-	char	**cmdv;
-	t_wlst	*list;
-	int		envplen;
-	int		wid;
-	int		pwd_ex;
-	int		st;
-	int		dl;
-	int		cmdc;
-	int		ret;
-	int		exit_called;
+	t_margs		*m;
+	char		*home;
+	char		**path;
+	char		**envp;
+	char		**cmdv;
+	t_strlst	*sl;
+	t_wlst		*list;
+	int			envplen;
+	int			wid;
+	int			pwd_ex;
+	int			st;
+	int			dl;
+	int			cmdc;
+	int			ret;
+	int			exit_called;
 };
 
 struct	s_bc

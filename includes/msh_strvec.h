@@ -32,8 +32,34 @@ char		**strvec_copy(char **array);
 void		strvec_flush(char **array);
 void		strvec_dispose(char **array);
 int			strvec_remove(char **array, char *name);
+int			strvec_nremove(char **array, char *name);
 int			strvec_strcmp(register char **s1, register char **s2);
 char		**strvec_from_word_list(t_wlst *lst, int alloc, int start, int *ip);
 t_wlst		*strvec_to_word_list(char **array, int alloc, int start);
+
+/* stringlist.c */
+
+typedef struct	s_strlst
+{
+	char	**list;
+	int		list_size;
+	int		list_len;
+}				t_strlst;
+
+typedef int	t_shstrlstmapfunc(char *s);
+
+t_strlst	*strlist_new(int size);
+t_strlst	*strlist_resize(t_strlst *l, int nsize);
+void		strlist_flush(t_strlst *l);
+void		strlist_dispose(t_strlst *l);
+int			strlist_remove(t_strlst *l, char *name);
+int			strlist_nremove(t_strlst *l, char *name);
+t_strlst	*strlist_copy(t_strlst *l);
+t_strlst	*strlist_merge(t_strlst *m1, t_strlst *m2);
+t_strlst	*strlist_append(t_strlst *m1, t_strlst *m2);
+t_strlst	*strlist_prefix_suffix(t_strlst *l, char *prefix, char *suffix);
+void		strlist_print(t_strlst *l, char *pr);
+void		strlist_walk(t_strlst *l, t_shstrlstmapfunc *fn);
+/* void		strlist_sort(t_strlst *l); */
 
 #endif

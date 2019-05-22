@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/20 12:00:29 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/21 17:32:26 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,12 +45,28 @@ void		exit_builtin(t_shenv *e)
 
 void		setenv_builtin(t_shenv *e)
 {
-	ft_dprintf(2, "minishell: %s: TODO\n", *e->cmdv);
+	t_strlst	*tmp;
+	t_strlst	*res;
+	
+	g_dbg ? ft_dprintf(2, "[DBG: setenv: start]\n") : 0;
+	if (!e || e->cmdc != 2 || !e->cmdv[1])
+		return ;
+	tmp = strlist_new(1);
+	tmp->list[0] = SAVESTR(e->cmdv[1]);
+	res = strlist_append(e->sl, tmp);
+	strlist_dispose(tmp);
+	strlist_dispose(e->sl);
+	e->sl = res;
+	g_dbg ? ft_dprintf(2, "[DBG: setenv: end]\n") : 0;
 }
 
 void		unsetenv_builtin(t_shenv *e)
 {
-	ft_dprintf(2, "minishell: %s: TODO\n", *e->cmdv);
+	g_dbg ? ft_dprintf(2, "[DBG: unsetenv: start]\n") : 0;
+	if (!e || e->cmdc != 2 || !e->cmdv[1])
+		return ;
+	strlist_nremove(e->sl, e->cmdv[1]);
+	g_dbg ? ft_dprintf(2, "[DBG: unsetenv: end]\n") : 0;
 }
 
 void		msh_sigint_sub(int sig)
@@ -268,7 +284,7 @@ char		*msh_dollar(char *ret, char *tmp)
 		{
 			free(ret);
 			tmp = NULL;
-			ret = ft_strdup(ft_strchr(g_shenv->envp[i], '='));
+			ret = ft_strdup(ft_strchr(g_shenv->envp[i], '=') + 1);
 			break ;
 		}
 	if (tmp && ft_strnequ("$?", tmp, 2))
@@ -434,6 +450,10 @@ int			main(int argc, char **argv, char **envp, char **aplv)
 	m.a = aplv;
 	e.m = &m;
 	e.envp = envp;
+	e.sl = strlist_new(0);
+	e.sl->list = strvec_copy(envp);
+	e.sl->list_len = strvec_len(envp);
+	e.sl->list_size = e.sl->list_len;
 	while (envp && envp[++i])
 	{
 		if (ft_strnequ("HOME=", envp[i], 5))

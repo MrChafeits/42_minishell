@@ -6,12 +6,14 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/19 20:03:41 by callen            #+#    #+#             */
-/*   Updated: 2019/05/20 22:23:37 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/21 14:04:14 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef VARIABLES_H
 # define VARIABLES_H
+# include "msh_array.h"
+/* # include "msh_assoc.h" */
 # include "libft.h"
 # include "msh_strvec.h"
 
@@ -59,7 +61,7 @@ union					u_val
 	char		*s; /* string value */
 	intmax_t	i; /* int value */
 	//COMMAND *f; /* function */
-	//ARRAY *a; /* array */
+	t_array		*a; /* array */
 	t_htab		*h; /* associatve array */
 	double		d; /* floating point number */
 	long double	ld; /* long double */

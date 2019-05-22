@@ -63,7 +63,7 @@ static void		init_shell_level(void);
 static void		uidset(void);
 static void		make_vers_array(void);
 /*arrayind_t*/
-static t_var	*null_assign(t_var *v, char *n, int index, char *s);
+static t_var	*null_assign(t_var *v, char *n, intmax_t index, char *s);
 
 static void		init_dynamic_vars(void);
 
