@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/05/21 00:06:15 by callen           ###   ########.fr        #
+#    Updated: 2019/05/22 22:42:46 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,6 +15,7 @@ DNAM := d_$(NAME)
 ANAM := a_$(NAME)
 
 CC ?= clang
+# CC := /nfs/2018/c/callen/.brew/bin/gcc-9
 CFLAGS := -Wall -Wextra -Werror
 DFLAGS := -Wall -Wextra -g
 AFLAGS := $(DFLAGS) -fsanitize=address
@@ -100,7 +101,6 @@ $(ASNDIR):
 
 .PHONY: aclean
 aclean:
-	@make -C libft dclean
 	rm -rf $(ANAM) $(ANAM).dSYM
 
 .PHONY: j

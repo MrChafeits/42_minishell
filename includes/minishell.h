@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/21 16:59:40 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/22 22:52:26 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ struct	s_env
 	char		**path;
 	char		**envp;
 	char		**cmdv;
-	t_strlst	*sl;
+	char		*sl;
 	t_wlst		*list;
 	int			envplen;
 	int			wid;

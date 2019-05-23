@@ -1,6 +1,6 @@
 #include "msh_strvec.h"
 #include "ft_stdio.h"
-//Array.c
+//array.c
 t_wdtk		*make_bare_word(const char *s)
 {
 	t_wdtk *w;
@@ -21,7 +21,7 @@ t_wlst		*make_word_list(t_wdtk *x, t_wlst *l)
 	return (w);
 }
 
-//Generic List
+//Generic List list.c
 
 int			list_length(t_glist *lst)
 {
@@ -50,9 +50,22 @@ t_glist		*list_reverse(t_glist *list)
 		list = n;
 	}
 	return (p);
-}	
+}
 
-// Strvec
+t_glist		*list_append(t_glist *head, t_glist *tail)
+{
+	register t_glist	*t_head;
+
+	if (head == 0)
+		return (tail);
+	t_head = head;
+	while (t_head->next)
+		t_head = t_head->next;
+	t_head->next = tail;
+	return (head);
+}
+
+// Strvec lib/sh/stringvec.c
 #ifdef FREE
 # undef FREE
 #endif
@@ -60,7 +73,7 @@ t_glist		*list_reverse(t_glist *list)
 #ifdef STRDUP
 # undef STRDUP
 #endif
-#define STRDUP(x) ((x) ? SAVESTR(x) : (char*)NULL)
+#define STRDUP(x) ((x) ? SAVESTR(x) : NULL)
 int			strvec_len(char **t)
 {
 	register int i;
@@ -88,28 +101,41 @@ char		**strvec_copy(char **array)
 	char			**ret;
 
 	len = strvec_len(array);
-	if (!(ret = malloc(sizeof(char*) * (len + 1))))
+	if ((ret = malloc(sizeof(char*) * (len + 1))) == 0)
 		return (NULL);
 	i = -1;
 	while (++i < len)
-		if (!(ret[i] = STRDUP(array[i])))
+		if ((ret[i] = STRDUP(array[i])) == 0)
 			return (NULL);
 	return (ret);
 }
 
+#define ABSUB(a,b) ((a) > (b) ? ((a) - (b)) : ((b) - (a)))
 void		strvec_flush(char **array)
 {
-	register int i;
+	register int	i;
+	uintptr_t		p;
 
+	/* ft_dprintf(2, "[DBG: strvec_flush: len(%d)]\n", strvec_len(array)); */
 	if (!array)
 		return ;
 	i = 0;
-	while (array[i])
+	p = 0;
+	while (array[i] && *array[i])
 	{
-		FREE(array[i]);
+		/* ft_dprintf(2,"[DBG: strvec_flush: p(%#zx) array[%02d](%p)(%s)]\n",p,i,array[i],array[i]); */
+		if (p == 0 || ABSUB((uintptr_t)(array[i]),p) < (uintptr_t)(array[0]))
+		{
+			FREE(array[i]);
+		}
+		else
+			break ;
+		if (i > 0)
+			p = (uintptr_t)(array[i]);
 		i++;
 	}
 }
+#undef ABSUB
 
 void		strvec_dispose(char **array)
 {
@@ -186,7 +212,11 @@ char		**strvec_from_word_list(t_wlst *lst, int alloc, int start, int *ip)
 		arr[count] = NULL;
 	count = start;
 	while (lst)
+	{
 		arr[count] = alloc ? STRSAV(lst->word->word) : lst->word->word;
+		count++;
+		lst = lst->next;
+	}
 	arr[count] = NULL;
 	if (ip)
 		*ip = count;
@@ -204,9 +234,9 @@ t_wlst		*strvec_to_word_list(char **array, int alloc, int start)
 		return (NULL);
 	while (array[count])
 		count++;
-	i = start;
+	i = start - 1;
 	list = NULL;
-	while (i < count)
+	while (++i < count)
 	{
 		w = make_bare_word(alloc ? array[i] : "");
 		if (alloc == 0)

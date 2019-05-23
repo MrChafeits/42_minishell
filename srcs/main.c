@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/21 17:32:26 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/22 21:42:44 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,15 @@
 
 void		env_builtin(t_shenv *e)
 {
-	register int i;
+	register t_wlst	*t;
 
 	g_dbg ? ft_dprintf(2, "[DBG: env_builtin: start]\n") : 0;
-	i = -1;
-	while (e->m->e && e->m->e[++i])
-		ft_printf("%s\n", e->m->e[i]);
+	t = e->list;
+	while (t && t->word)
+	{
+		ft_printf("%s\n", t->word->word);
+		t = t->next;
+	}
 }
 
 void		exit_builtin(t_shenv *e)
@@ -45,27 +48,58 @@ void		exit_builtin(t_shenv *e)
 
 void		setenv_builtin(t_shenv *e)
 {
-	t_strlst	*tmp;
-	t_strlst	*res;
+	t_wdtk	*new;
+	t_wlst	*t;
 	
 	g_dbg ? ft_dprintf(2, "[DBG: setenv: start]\n") : 0;
 	if (!e || e->cmdc != 2 || !e->cmdv[1])
 		return ;
-	tmp = strlist_new(1);
-	tmp->list[0] = SAVESTR(e->cmdv[1]);
-	res = strlist_append(e->sl, tmp);
-	strlist_dispose(tmp);
-	strlist_dispose(e->sl);
-	e->sl = res;
+	g_dbg ? ft_dprintf(2, "[DBG: setenv: e->cmdv[1](%s)]\n", e->cmdv[1]) : 0;
+	new = make_bare_word(e->cmdv[1]);
+	g_dbg ? ft_dprintf(2, "[DBG: setenv: new->word(%s)]\n", new->word) : 0;
+	t = REVLIST(e->list, t_wlst*);
+	t = make_word_list(new, t);
+	e->list = REVLIST(t, t_wlst*);
+	strvec_dispose(e->envp);
+	e->envp = strvec_from_word_list(e->list, 1, 0, 0);
 	g_dbg ? ft_dprintf(2, "[DBG: setenv: end]\n") : 0;
 }
 
 void		unsetenv_builtin(t_shenv *e)
 {
+	int		len;
+	t_wlst	*w;
+	t_wlst	*temp;
+	t_wlst	*prev;
+
 	g_dbg ? ft_dprintf(2, "[DBG: unsetenv: start]\n") : 0;
 	if (!e || e->cmdc != 2 || !e->cmdv[1])
 		return ;
-	strlist_nremove(e->sl, e->cmdv[1]);
+	g_dbg ? ft_dprintf(2, "[DBG: unsetenv: e->cmdv[1](%s)]\n", e->cmdv[1]) : 0;
+	prev = NULL;
+	w = NULL;
+	len = ft_strlen(e->cmdv[1]);
+	temp = e->list;
+	while (temp && temp->word)
+	{
+		if (ft_strnequ(e->cmdv[1], temp->word->word, len))
+		{
+			if (prev)
+				prev->next = temp->next;
+			else
+				e->list = temp->next;
+			w = temp;
+			break ;
+		}
+		prev = temp;
+		temp = temp->next;
+	}
+	g_dbg ? ft_dprintf(2, "[DBG: unsetenv: w->word(%s)]\n", w->word->word) : 0;
+	FREE(w->word->word);
+	FREE(w->word);
+	FREE(w);
+	strvec_dispose(e->envp);
+	e->envp = strvec_from_word_list(e->list, 1, 0, 0);
 	g_dbg ? ft_dprintf(2, "[DBG: unsetenv: end]\n") : 0;
 }
 
@@ -260,8 +294,7 @@ char		*msh_readline(void)
 	return (ln);
 }
 
-#define TOKSEP "\t \\;"
-#define TOK_BUFSZ (64)
+#define TOKSEP "\t \\"
 
 void		msh_panic(char *msg)
 {
@@ -271,30 +304,34 @@ void		msh_panic(char *msg)
 
 char		*msh_dollar(char *ret, char *tmp)
 {
-	register int	i;
+	register t_wlst	*t;
+	char			*r;
 	int				vl;
 
 	g_dbg ? ft_dprintf(2, "[DBG: msh_dollar: start:ret(%s),tmp(%s)]\n", ret,tmp) : 0;
-	i = -1;
 	if (!tmp || !*tmp)
 		return (ret);
 	vl = ft_strlen(tmp + 1);
-	while (++i < g_shenv->envplen)
-		if (ft_strnequ(g_shenv->envp[i], tmp + 1, vl))
-		{
-			free(ret);
-			tmp = NULL;
-			ret = ft_strdup(ft_strchr(g_shenv->envp[i], '=') + 1);
-			break ;
-		}
-	if (tmp && ft_strnequ("$?", tmp, 2))
+	if (ft_strnequ("$?", tmp, 2))
 	{
 		free(ret);
-		tmp = NULL;
-		ret = ft_itoa(SHR8(g_shenv->ret) & 0xff);
+		r = ft_itoa(SHR8(g_shenv->ret) & 0xff);
+		vl = 0;
 	}
-	g_dbg ? ft_dprintf(2, "[DBG: msh_dollar: subst(%s)]\n", ret) : 0;
-	return (ret);
+	t = g_shenv->list;
+	while (vl && t && t->word)
+	{
+		if (ft_strnequ(t->word->word, tmp + 1, vl))
+		{
+			free(ret);
+			r = ft_strdup(ft_strchr(t->word->word, '=') + 1);
+			g_dbg ? ft_dprintf(2, "[DBG: msh_dollar: foundr(%s)]\n", r) : 0;
+			break ;
+		}
+		t = t->next;
+	}
+	g_dbg ? ft_dprintf(2, "[DBG: msh_dollar: subst(%s)]\n", r) : 0;
+	return (r);
 }
 
 //subst.c subst.h
@@ -302,22 +339,25 @@ char		*msh_expand(char *token)
 {
 	char	*tmp;
 	char	*ret;
+	char	*rett;
 
 	ret = ft_strdup(token);
+	rett = ret;
+	free(token);
 	g_dbg ? ft_dprintf(2, "[DBG: msh_expand: start:token(%s)]\n", token) : 0;
 	if ((tmp = ft_strchr(ret, '~')))
 	{
 		free(ret);
-		if (!(ret = ft_strjoin(g_shenv->home, tmp + 1)))
+		if (!(rett = ft_strjoin(g_shenv->home, tmp + 1)))
 			msh_panic("Memory allocation error in msh_expand ~");
 	}
 	else if ((tmp = ft_strchr(ret, '$')))
 	{//echo $PATH
-		if (!(ret = msh_dollar(ret, tmp)))
+		if (!(rett = msh_dollar(ret, tmp)))
 			msh_panic("Memory allocation error in msh_expand $");
 	}
 	g_dbg ? ft_dprintf(2, "[DBG: msh_expand: end:ret(%s)]\n", ret) : 0;
-	return (ret);
+	return (rett);
 }
 
 //subst.c subst.h
@@ -326,7 +366,7 @@ char		**msh_tokenize(char *str)
 	char	**tokens;
 	int		i;
 
-	g_dbg ? ft_dprintf(2, "[DBG: msh_tokenize: start]\n") : 0;
+	g_dbg ? ft_dprintf(2, "[DBG: msh_tokenize: start(%s)]\n", str) : 0;
 	if (!(tokens = ft_strsplit(str, ' ')))
 		msh_panic("Memory allocation error in msh_tokenize");
 	i = -1;
@@ -347,7 +387,7 @@ void		msh_parse(char **inpt)
 
 	g_dbg ? ft_dprintf(2, "[DBG: msh_parse: start]\n") : 0;
 	i = -1;
-	while (inpt[++i])
+	while (inpt && inpt[++i])
 	{
 		tkns = msh_tokenize(inpt[i]);
 		if (*tkns)
@@ -382,9 +422,7 @@ int			msh_repl(void)
 		}
 		boy = ft_strsplit(ln, ';');
 		msh_parse(boy);
-		if (boy && *boy && **boy)
-			strvec_dispose(boy);
-		if (ln && *ln)
+		if (ln)
 			free(ln);
 	}
 	g_dbg ? ft_dprintf(2, "[DBG: msh_repl: end:ret(%d)]\n",g_shenv->ret) : 0;
@@ -427,6 +465,34 @@ void		msh_usage(int ex, char *v)
 	exit(ex);
 }
 
+static void	init_shenv(t_shenv *shenv, t_margs *mg)
+{
+	register int	i;
+
+	shenv->m = mg;
+	shenv->envp = strvec_copy(mg->e);
+	shenv->cmdv = NULL;
+	shenv->sl = NULL;
+	shenv->list = strvec_to_word_list(mg->e, 1, 0);
+	shenv->envplen = strvec_len(mg->e);
+	shenv->wid = 0;
+	shenv->pwd_ex = 0;
+	shenv->st = 0;
+	shenv->dl = 0;
+	shenv->cmdc = 0;
+	shenv->ret = 0;
+	shenv->exit_called = 0;
+	i = -1;
+	while (mg->e && mg->e[++i])
+	{
+		if (ft_strnequ("HOME=", mg->e[i], 5))
+			shenv->home = ft_strdup(mg->e[i] + 5);
+		if (ft_strnequ("PATH=", mg->e[i], 5))
+			shenv->path = ft_strsplit(mg->e[i] + 5, ':');
+	}
+}
+/*TODO: separate environment variable structure so VARNAME and VARVALUE are
+ *      stored separately */
 int			main(int argc, char **argv, char **envp, char **aplv)
 {
 	static t_shenv	e;
@@ -448,20 +514,22 @@ int			main(int argc, char **argv, char **envp, char **aplv)
 	m.v = argv;
 	m.e = envp;
 	m.a = aplv;
-	e.m = &m;
-	e.envp = envp;
-	e.sl = strlist_new(0);
-	e.sl->list = strvec_copy(envp);
-	e.sl->list_len = strvec_len(envp);
-	e.sl->list_size = e.sl->list_len;
-	while (envp && envp[++i])
-	{
-		if (ft_strnequ("HOME=", envp[i], 5))
-			e.home = ft_strdup(envp[i] + 5);
-		if (ft_strnequ("PATH=", envp[i], 5))
-			e.path = ft_strsplit(envp[i] + 5, ':');
-	}
-	e.envplen = i;
+	init_shenv(&e, &m);
+	/* e.m = &m; */
+	/* e.envp = strvec_copy(envp); */
+	/* e.list = strvec_to_word_list(e.envp, 1, 0); */
+	/* e.sl = strlist_new(0); */
+	/* e.sl->list = strvec_copy(envp); */
+	/* e.sl->list_len = strvec_len(envp); */
+	/* e.sl->list_size = e.sl->list_len; */
+	/* while (envp && envp[++i]) */
+	/* { */
+	/* 	if (ft_strnequ("HOME=", envp[i], 5)) */
+	/* 		e.home = ft_strdup(envp[i] + 5); */
+	/* 	if (ft_strnequ("PATH=", envp[i], 5)) */
+	/* 		e.path = ft_strsplit(envp[i] + 5, ':'); */
+	/* } */
+	/* e.envplen = i; */
 	g_shenv = &e;
 	/* ch = msh_prompt(); */
 	ch = msh_repl();
