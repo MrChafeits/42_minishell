@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/05/22 22:42:46 by callen           ###   ########.fr        #
+#    Updated: 2019/05/23 23:53:36 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,8 +14,8 @@ NAME := minishell
 DNAM := d_$(NAME)
 ANAM := a_$(NAME)
 
-CC ?= clang
-# CC := /nfs/2018/c/callen/.brew/bin/gcc-9
+# CC ?= clang
+CC := /nfs/2018/c/callen/.brew/bin/gcc-9
 CFLAGS := -Wall -Wextra -Werror
 DFLAGS := -Wall -Wextra -g
 AFLAGS := $(DFLAGS) -fsanitize=address
@@ -137,4 +137,4 @@ norme:
 .PHONY: codesize
 codesize:
 	@printf "Lines of code: "
-	@cat $(NORME) | grep -Ev '(^\/\*|^\*\*|^\*\/$$|^$$|\*\/)' | wc -l | cut -d' ' -f7
+	@cat $(NORME) | grep -Ev '(^\/\*|^\*\*|^\*\/$$|^$$|\*\/)' | wc -l

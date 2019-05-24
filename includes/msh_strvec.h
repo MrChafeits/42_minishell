@@ -54,6 +54,8 @@ void		strlist_flush(t_strlst *l);
 void		strlist_dispose(t_strlst *l);
 int			strlist_remove(t_strlst *l, char *name);
 int			strlist_nremove(t_strlst *l, char *name);
+int			strlist_nsearch(t_strlst *sl, char *name);
+t_strlst	*strlist_add(t_strlst *sl, char *s);
 t_strlst	*strlist_copy(t_strlst *l);
 t_strlst	*strlist_merge(t_strlst *m1, t_strlst *m2);
 t_strlst	*strlist_append(t_strlst *m1, t_strlst *m2);

@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/22 22:52:26 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/23 20:38:16 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,7 @@ struct	s_mainargs
 struct	s_env
 {
 	t_margs		*m;
+	t_strlst	*envlst;
 	char		*home;
 	char		**path;
 	char		**envp;
@@ -120,6 +121,7 @@ t_shenv	*g_shenv;
 int		msh_prompt(void);
 void	msh_print_prompt(void);
 void	msh_sigint(int s);
+void	msh_panic(char *msg);
 
 void	cd_builtin(t_shenv *e);
 void	echo_builtin(t_shenv *e);
@@ -131,5 +133,6 @@ void	unsetenv_builtin(t_shenv *e);
 char	*get_string_value(const char *v);
 char	*get_working_directory(const char *v);
 char	*sh_makepath(const char *p, const char *d, int f);
+char	*get_string_value(const char *var);
 
 #endif

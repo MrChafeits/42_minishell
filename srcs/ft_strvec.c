@@ -91,7 +91,24 @@ char		**strvec_new(int n)
 
 char		**strvec_resize(char **array, int nsize)
 {
-	return (ft_realloc(array, strvec_len(array), nsize * sizeof(char*)));
+	register int	i;
+	int				len;
+	char			**new;
+
+	len = strvec_len(array);
+	if (len < nsize)
+		return (array);
+	new = strvec_new(nsize + 1);
+	i = -1;
+	while (++i < len)
+		new[i] = array[i];
+	i = len - 1;
+	while (++i < nsize)
+		new[i] = NULL;
+	FREE(array);
+	return (new);
+	/* return (realloc(array, nsize * sizeof(char*))); */
+	/* return (ft_realloc(array, strvec_len(array), nsize * sizeof(char*))); */
 }
 
 char		**strvec_copy(char **array)
@@ -110,6 +127,7 @@ char		**strvec_copy(char **array)
 	return (ret);
 }
 
+//TODO: remove incredibly hacky bandaid for buffer overflow
 #define ABSUB(a,b) ((a) > (b) ? ((a) - (b)) : ((b) - (a)))
 void		strvec_flush(char **array)
 {
@@ -284,18 +302,49 @@ t_strlst	*strlist_new(int n)
 
 t_strlst	*strlist_resize(t_strlst *sl, int n)
 {
-	register int i;
+	register int	i;
+	char			**tmp;
 
 	if (sl == 0)
 		return (sl = strlist_new(n));
+	ft_dprintf(2, "[DBG: strlist_resize: n(%d)]\n", n);
+	ft_dprintf(2, "[DBG: strlist_resize: size(%d)]\n", sl->list_size);
+	ft_dprintf(2, "[DBG: strlist_resize: len(%d)]\n", sl->list_len);
+	tmp = NULL;
 	if (n > sl->list_size)
 	{
-		sl->list = strvec_resize(sl->list, n + 1);
-		i = sl->list_size - 1;
-		while (++i <= n)
-			sl->list[i] = NULL;
+		tmp = malloc((n + 1) * sizeof(*tmp));
+		/* strvec_resize(sl->list, (n != sl->list_size * 2 ? n * 2 : n) + 1); */
+		i = -1;
+		while (++i < sl->list_len)
+			tmp[i] = sl->list[i];
+		i = sl->list_size;
+		ft_dprintf(2, "[DBG: strlist_resize: size-1(%d)]\n", i);
+		while (i < n)
+		{
+			ft_dprintf(2, "[DBG: strlist_resize: i(%d)]\n", i);
+			/* sl->list[i] = NULL; */
+			tmp[i] = NULL;
+			i++;
+		}
 		sl->list_size = n;
+		ft_dprintf(2, "[DBG: strlist_resize: p1(%p)p2(%p)]\n", sl->list, tmp);
 	}
+	return (sl);
+}
+
+t_strlst	*strlist_add(t_strlst *sl, char *s)
+{
+	if (sl == 0)
+		return (NULL);
+	if (sl->list_len + 1 >= sl->list_size)
+	{
+		ft_dprintf(2, "[DBG: strlist_add: len(%d)]\n", sl->list_len);
+		ft_dprintf(2, "[DBG: strlist_add: size(%d)]\n", sl->list_size);
+		sl = strlist_resize(sl, sl->list_size * 2);
+	}
+	sl->list[sl->list_len] = ft_strdup(s);
+	sl->list_len++;
 	return (sl);
 }
 
@@ -338,6 +387,21 @@ int			strlist_nremove(t_strlst *sl, char *s)
 	if (r)
 		sl->list_len--;
 	return (r);
+}
+
+int			strlist_nsearch(t_strlst *sl, char *name)
+{
+	register int	i;
+	int				nl;
+
+	if (!sl || !sl->list_len || !name)
+		return (-1);
+	nl = ft_strlen(name);
+	i = -1;
+	while (++i < sl->list_len)
+		if (ft_strnequ(sl->list[i], name, nl))
+			return (i);
+	return (-1);
 }
 
 t_strlst	*strlist_copy(t_strlst *sl)
