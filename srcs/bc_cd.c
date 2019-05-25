@@ -5,6 +5,144 @@
 #include <sys/stat.h>
 #include <limits.h>
 
+char		*get_string_value(const char *var)
+{
+	register int	i;
+	int				vl;
+	char			*ret;
+	char			*tmp;
+
+	g_dbg ? ft_dprintf(2, "[DBG: get_str_val: start var(%s)]\n",var) : 0;
+	i = -1;
+	ret = NULL;
+	vl = ft_strlen(var);
+	while (++i < g_shenv->envlst->list_len)
+	{
+		tmp = g_shenv->envlst->list[i];
+		if ((void*)tmp == NULL)
+		{
+			break;
+		}
+		if (ft_strnequ(g_shenv->envlst->list[i], var, vl))
+		{
+			tmp = ft_strchr(g_shenv->envlst->list[i], '=') + 1;
+			ret = ft_strdup(tmp);
+			break ;
+		}
+	}
+	g_dbg ? ft_dprintf(2, "[DBG: get_str_val: end ret(%s)]\n",ret) : 0;
+	return (ret);
+}
+//TODO: update $PWD and $OLDPWD when cd_builtin is called
+int			folderoni(char *path)
+{
+	int		r;
+	char	*cdpath;
+	char	*cur;
+
+	cur = getcwd(0, 0);
+	if (!(r = 0) && path && path[0] == '~')
+	{
+		cdpath = ft_strjoin_free(g_shenv->home, path + 1, 'R');
+		path = cdpath;
+		path = ft_strcat(cur, path);
+	}
+	else if (!path)
+		path = g_shenv->home;
+	if ((r = access(path, F_OK)) == -1)
+		ft_dprintf(2, "minishell: cd: %s: No such file or directory\n", path);
+	else if ((r = access(path, R_OK)) == -1)
+		ft_dprintf(2, "minishell: cd: %s: Permission denied\n", path);
+	else
+		chdir(path);
+	g_shenv->sl = ft_strdup(cur);
+	free(cur);
+	return (r);
+}
+
+int			strvec_search(char **array, char *name)
+{
+	register int	i;
+	int				nl;
+
+	if (!array || !name)
+		return (-1);
+	nl = ft_strlen(name);
+	i = -1;
+	while (array[++i])
+		if (ft_strnequ(name, array[i], nl))
+			return (i);
+	return (-1);
+}
+
+int			word_list_search(t_wlst *list, char *name)
+{
+	register t_wlst	*t;
+	register int	i;
+	int				nl;
+
+	if (list == 0 || name == 0)
+		return (-1);
+	i = 0;
+	t = list;
+	nl = ft_strlen(name);
+	while (t)
+	{
+		if (ft_strnequ(t->word->word, name, nl))
+			return (i);
+		i++;
+		t = t->next;
+	}
+	return (-1);
+}
+
+void		bind_var_value(char *name, char *value, int alloc)
+{
+	char	*var;
+	/* char	**h; */
+
+	g_dbg ? ft_dprintf(2, "[DBG: bind_var_value: start(%s)(%s)]\n",name,value) : 0;
+	if (name && strlist_nsearch(g_shenv->envlst, name) >= 0)
+		strlist_nremove(g_shenv->envlst, name);
+	var = ft_strjoin_free(name, "=", alloc == 1 || alloc == 3 ? 'L' : 0); //XXX
+	var = ft_strjoin_free(var, value, alloc >= 2 ? ('L' + 'R') : 'L'); //XXX - potential issue
+	g_dbg ? ft_dprintf(2, "[DBG: bind_var_value: var(%s)]\n",var) : 0;
+	strlist_add(g_shenv->envlst, var);
+	free(var);
+	g_dbg ? ft_dprintf(2, "[DBG: bind_var_value: end]\n") : 0;
+}
+
+void		cd_builtin(t_shenv *e)
+{
+	char	*dirname;
+	int		old;
+
+	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: start[%d](%s)]\n", e->cmdc, *e->cmdv) : 0;
+	if (e->cmdc == 1)
+		dirname = get_string_value("HOME");
+	else if (e->cmdc == 2 && ft_strequ("-", e->cmdv[1]))
+	{
+		dirname = get_string_value("OLDPWD");
+		ft_printf("%s\n", dirname);
+	}
+	else
+		dirname = ft_strdup(e->cmdv[1]);
+	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: dirname(%s)]\n", dirname) : 0;
+	old = folderoni(dirname);
+	if (!old)
+	{
+		bind_var_value("OLDPWD", g_shenv->sl, 2);
+		bind_var_value("PWD", dirname, 2);
+	}
+	else
+		FREE(dirname);
+	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: end]\n") : 0;
+}
+
+void		pwd_builtin(t_shenv *e)
+{
+	g_dbg ? ft_dprintf(2, "[DBG: pwd_builtin: start(%s)]\n", *e->cmdv) : 0;
+}
 /* #ifndef MP_DOTILDE /\* lib/sh/makepath.c *\/ */
 /* # define MP_DOTILDE 0x01 */
 /* # define MP_DOCWD 0x02 */
@@ -422,45 +560,14 @@ static int	setpwd(char *dirname)
 /* 		res = sh_makepath(dot_path, str, 0); */
 /* 	return (res); */
 /* } */
-
-char		*get_string_value(const char *var)
-{
-	register int	i;
-	int				vl;
-	char			*ret;
-	char			*tmp;
-
-	i = -1;
-	ret = NULL;
-	vl = ft_strlen(var);
-	while (++i < g_shenv->envlst->list_len)
-	{
-		ft_dprintf(2, "[DBG: get_str_val: i(%d)]\n",i);
-		tmp = g_shenv->envlst->list[i];
-		if ((void*)tmp == NULL)
-		{
-			break;
-		}
-		if (ft_strnequ(g_shenv->envlst->list[i], var, vl))
-		{
-			tmp = ft_strchr(g_shenv->envlst->list[i], '=') + 1;
-			ret = ft_strdup(tmp);
-			break ;
-		}
-	}
-	return (ret);
-}
-
 /* static char	*resetpwd(char *caller) */
 /* { */
 /* 	char *tdir; */
-
 /* 	FREE(g_the_current_working_directory); */
 /* 	g_the_current_working_directory = NULL; */
 /* 	tdir = get_working_directory(caller); */
 /* 	return (tdir); */
 /* } */
-
 /* static int	change_to_directory(char *newdir, int nolinks, int xattr) */
 /* { */
 /* 	char	*t; */
@@ -469,7 +576,6 @@ char		*get_string_value(const char *var)
 /* 	int		canon_failed; */
 /* 	int		r; */
 /* 	int		ndlen; */
-
 /* 	(void)xattr; */
 /* 	tdir = NULL; */
 /* 	if (g_the_current_working_directory == 0) */
@@ -537,18 +643,15 @@ char		*get_string_value(const char *var)
 /* 	free(tdir); */
 /* 	return (r); */
 /* } */
-
 /* static int	bindpwd(int links) */
 /* { */
 /* 	(void)links; */
 /* 	return (0); */
 /* } */
-
 /* #define LCD_DOVARS 0x001 */
 /* #define LCD_DOSPELL 0x002 */
 /* #define LCD_PRINTPATH 0x004 */
 /* #define LCD_FREEDIRNAME 0x008 */
-
 /* int			cd_blabbo_builtin(t_wlst *list) */
 /* { */
 /* 	char	*dirname; */
@@ -560,7 +663,6 @@ char		*get_string_value(const char *var)
 /* 	int		opt; */
 /* 	int		lflag; */
 /* 	int		e; */
-
 /* 	g_dbg?ft_dprintf(2,"[DBG:cd_builtin:start[%d](%s)]\n",g_shenv->cmdc,*g_shenv->cmdv):0; */
 /* 	no_symlinks = g_nolinks; */
 /* 	/\* list = loptend; *\/ */
@@ -591,161 +693,4 @@ char		*get_string_value(const char *var)
 /* 		} */
 /* 	} */
 /* 	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: end]\n") : 0; */
-/* } */
-//TODO: update $PWD and $OLDPWD when cd_builtin is called
-int			folderoni(char *path)
-{
-	int		r;
-	char	*cdpath;
-	char	*cur;
-
-	cur = getcwd(0, 0);
-	if (!(r = 0) && path && path[0] == '~')
-	{
-		cdpath = ft_strjoin_free(g_shenv->home, path + 1, 'R');
-		path = cdpath;
-		path = ft_strcat(cur, path);
-	}
-	else if (!path)
-		path = g_shenv->home;
-	if ((r = access(path, F_OK)) == -1)
-		ft_dprintf(2, "minishell: cd: %s: No such file or directory\n", path);
-	else if ((r = access(path, R_OK)) == -1)
-		ft_dprintf(2, "minishell: cd: %s: Permission denied\n", path);
-	else
-		chdir(path);
-	g_shenv->sl = ft_strdup(cur);
-	free(cur);
-	return (r);
-}
-
-void		word_list_head_flush(t_wlst *list)
-{
-	if (list == 0 || list->word == 0)
-		return ;
-	FREE(list->word->word);
-	FREE(list->word);
-	FREE(list);
-}
-
-#define DELN (w[0])
-#define TEMP (w[1])
-#define PREV (w[2])
-
-void		unbind_var_value(char *name, int len)
-{
-	t_wlst	*w[4];
-
-	if (!name)
-		return ;
-	PREV = NULL;
-	DELN = NULL;
-	len = ft_strlen(name);
-	TEMP = g_shenv->list;
-	while (TEMP && TEMP->word)
-	{
-		if (ft_strnequ(name, TEMP->word->word, len))
-		{
-			if (PREV)
-				PREV->next = TEMP->next;
-			else
-				g_shenv->list = TEMP->next;
-			DELN = TEMP;
-			break ;
-		}
-		PREV = TEMP;
-		TEMP = TEMP->next;
-	}
-	word_list_head_flush(DELN);
-	strvec_dispose(g_shenv->envp);
-	g_shenv->envp = strvec_from_word_list(g_shenv->list, 1, 0, 0);
-}
-
-#undef DELN
-#undef TEMP
-#undef PREV
-
-int			strvec_search(char **array, char *name)
-{
-	register int	i;
-	int				nl;
-
-	if (!array || !name)
-		return (-1);
-	nl = ft_strlen(name);
-	i = -1;
-	while (array[++i])
-		if (ft_strnequ(name, array[i], nl))
-			return (i);
-	return (-1);
-}
-
-int			word_list_search(t_wlst *list, char *name)
-{
-	register t_wlst	*t;
-	register int	i;
-	int				nl;
-
-	if (list == 0 || name == 0)
-		return (-1);
-	i = 0;
-	t = list;
-	nl = ft_strlen(name);
-	while (t)
-	{
-		if (ft_strnequ(t->word->word, name, nl))
-			return (i);
-		i++;
-		t = t->next;
-	}
-	return (-1);
-}
-
-void		bind_var_value(char *name, char *value, int alloc)
-{
-	char	*var;
-	/* char	**h; */
-
-	g_dbg ? ft_dprintf(2, "[DBG: bind_var_value: start(%s)(%s)]\n",name,value) : 0;
-	if (name && strlist_nsearch(g_shenv->envlst, name) >= 0)
-		strlist_nremove(g_shenv->envlst, name);
-	var = ft_strjoin_free(name, "=", alloc == 1 || alloc == 3 ? 'L' : 0); //XXX
-	var = ft_strjoin_free(var, value, alloc >= 2 ? ('L' + 'R') : 'L'); //XXX - potential issue
-	g_dbg ? ft_dprintf(2, "[DBG: bind_var_value: var(%s)]\n",var) : 0;
-	strlist_add(g_shenv->envlst, var);
-	free(var);
-	g_dbg ? ft_dprintf(2, "[DBG: bind_var_value: end]\n") : 0;
-}
-
-void		cd_builtin(t_shenv *e)
-{
-	char	*dirname;
-	int		old;
-
-	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: start[%d](%s)]\n", e->cmdc, *e->cmdv) : 0;
-	if (e->cmdc == 1)
-		dirname = get_string_value("HOME");
-	else if (e->cmdc == 2 && ft_strequ("-", e->cmdv[1]))
-	{
-		dirname = get_string_value("OLDPWD");
-		ft_printf("%s\n", dirname);
-	}
-	else
-		dirname = ft_strdup(e->cmdv[1]);
-	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: dirname(%s)]\n", dirname) : 0;
-	old = folderoni(dirname);
-	if (!old)
-	{
-		bind_var_value("OLDPWD", g_shenv->sl, 2);
-		bind_var_value("PWD", dirname, 2);
-	}
-	/* FREE(dirname); */
-	/* FREE(g_shenv->sl); */
-	g_dbg ? ft_dprintf(2, "[DBG: cd_builtin: end]\n") : 0;
-}
-
-/* void		pwd_builtin(t_shenv *e) */
-/* { */
-/* 	g_dbg ? ft_dprintf(2, "[DBG: pwd_builtin: start(%s)]\n", *e->cmdv) : 0; */
-/* 	change_to_directory(0, 0, 0); */
 /* } */

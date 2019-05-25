@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/23 20:38:16 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/24 19:16:08 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ struct	s_env
 	int			dl;
 	int			cmdc;
 	int			ret;
+	int			prompt_printed;
 	int			exit_called;
 };
 

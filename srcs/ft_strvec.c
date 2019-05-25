@@ -290,6 +290,7 @@ t_strlst	*strlist_new(int n)
 		i = -1;
 		while (++i < n)
 			ret->list[i] = NULL;
+		ret->list[i] = NULL;
 	}
 	else
 	{
@@ -322,7 +323,7 @@ t_strlst	*strlist_resize(t_strlst *sl, int n)
 		ft_dprintf(2, "[DBG: strlist_resize: size-1(%d)]\n", i);
 		while (i < n)
 		{
-			ft_dprintf(2, "[DBG: strlist_resize: i(%d)]\n", i);
+			/* ft_dprintf(2, "[DBG: strlist_resize: i(%d)]\n", i); */
 			/* sl->list[i] = NULL; */
 			tmp[i] = NULL;
 			i++;
