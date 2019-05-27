@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/26 20:38:42 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/26 22:15:49 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,7 @@ void		unsetenv_builtin(t_shenv *e)
 void		msh_sigint_sub(int sig)
 {
 	g_dbg ? ft_dprintf(2, "[DBG: msh_sigint_sub: start:sig(%d)sr(%d)]\n", sig,g_shenv->signal_recv) : 0;
-	g_shenv->signal_recv = !g_shenv->signal_recv ? sig : 0;
+	g_shenv->signal_recv = 0;
 	if (sig == SIGINT)
 	{
 		write(1, "\n", 1);
@@ -113,14 +113,18 @@ void		msh_sigint_sub(int sig)
 
 void		msh_sigint(int sig)
 {
-	g_dbg ? ft_dprintf(2, "[DBG: msh_sigint: start:sig(%d)sr(%d)]\n", sig,g_shenv->signal_recv) : 0;
+	g_dbg ? ft_dprintf(2, " [DBG: msh_sigint: start:sig(%d)sr(%d)]\n", sig,g_shenv->signal_recv) : 0;
 	if (sig == SIGINT)
 	{
 		write(1, "\n", 1);
+		g_dbg ? ft_dprintf(2, " [DBG: msh_sigint: SIGINT p(%d)sr(%d)]\n", g_shenv->prompt_printed,g_shenv->signal_recv) : 0;
 		if (!g_shenv->prompt_printed && !g_shenv->signal_recv)
 		{
 			msh_print_prompt();
-			g_shenv->prompt_printed = 1;
+		}
+		else
+		{
+			g_shenv->prompt_printed = 0;
 		}
 		signal(SIGINT, msh_sigint);
 	}
@@ -133,7 +137,7 @@ int			msh_exec_path(t_shenv *e)
 	char			*s;
 	pid_t			pid;
 
-	g_dbg ? ft_dprintf(2, "[DBG: msh_exec_path: start:cmdv(%s)]\n", *e->cmdv) : 0;
+	g_dbg ? ft_dprintf(2, " [DBG: msh_exec_path: start:cmdv(%s)]\n", *e->cmdv) : 0;
 	ex = 0;
 	e->path = ft_strsplit((e->home = get_string_value("PATH")), ':');
 	pid = fork();
@@ -145,7 +149,7 @@ int			msh_exec_path(t_shenv *e)
 			{
 				s = ft_strjoin(e->path[i], "/");
 				s = ft_strjoin_free(s, *e->cmdv, 'L');
-				g_dbg ? ft_dprintf(2, "[DBG: msh_exec_path: s(%s)]\n", s) : 0;
+				g_dbg ? ft_dprintf(2, " [DBG: msh_exec_path: s(%s)]\n", s) : 0;
 				if (!access(s, F_OK) && access(s, X_OK) < 0)
 				{
 					ft_dprintf(2, "minishell: %s: Permission denied\n", s);
@@ -167,7 +171,7 @@ int			msh_exec_path(t_shenv *e)
 	strvec_dispose(e->path);
 	e->path = NULL;
 	e->signal_recv = 1;
-	g_dbg ? ft_dprintf(2, "[DBG: msh_exec_path: end:ret(%d)i(%d)ex(%d)]\n", e->ret,i,ex) : 0;
+	g_dbg ? ft_dprintf(2, " [DBG: msh_exec_path: end:ret(%d)i(%d)ex(%d)]\n", e->ret,i,ex) : 0;
 	return (e->ret);
 }
 
@@ -187,19 +191,19 @@ int			msh_exec_builtin(t_shenv *e)
 
 	i = -1;
 	status = 1;
-	g_dbg ? ft_dprintf(2, "[DBG: msh_exec_builtin: start:cmdv(%s)]\n", *e->cmdv) : 0;
+	g_dbg ? ft_dprintf(2, " [DBG: msh_exec_builtin: start:cmdv(%s)]\n", *e->cmdv) : 0;
 	while (g_cmds[++i].cmd != 0)
 	{
 		if (ft_strequ(g_cmds[i].cmd, *e->cmdv))
 		{
 			g_dbg ? ft_dprintf(2,
-			"[DBG: msh_exec_builtin: g_cmds[%d].cmd(%s)]\n", i, g_cmds[i].cmd) : 0;
+			" [DBG: msh_exec_builtin: g_cmds[%d].cmd(%s)]\n", i, g_cmds[i].cmd) : 0;
 			g_cmds[i].f(e);
 			status = 0;
 			break ;
 		}
 	}
-	g_dbg ? ft_dprintf(2, "[DBG: msh_exec_builtin: end:status(%d)]\n", status) : 0;
+	g_dbg ? ft_dprintf(2, " [DBG: msh_exec_builtin: end:status(%d)]\n", status) : 0;
 	return (status);
 }
 
@@ -210,26 +214,26 @@ int			msh_exec_pwd(t_shenv *e)
 	pid_t	pid;
 	pid_t	wid;
 
-	g_dbg ? ft_dprintf(2, "[DBG: msh_exec_pwd: start:cmdv(%s)]\n", *e->cmdv) : 0;
+	g_dbg ? ft_dprintf(2, " [DBG: msh_exec_pwd: start:cmdv(%s)]\n", *e->cmdv) : 0;
 	pid = fork();
 	signal(SIGINT, msh_sigint);
 	if (!pid)
 	{
 		if ((ex = execve(*e->cmdv, e->cmdv, e->envlst->list)) == -1)
 			exit(127);
-		g_dbg ? ft_dprintf(2, "[DBG: msh_exec_pwd: child ex(%d)]\n", ex) : 0;
+		g_dbg ? ft_dprintf(2, " [DBG: msh_exec_pwd: child ex(%d)]\n", ex) : 0;
 		exit((e->pwd_ex = ex));
 	}
 	else if (pid < 0)
-		exit(-2 + !(!ft_dprintf(2, "-minishell: %s: Error forking\n", *e->cmdv)));
+		exit(-2 + !(!ft_dprintf(2, "minishell: %s: Error forking\n", *e->cmdv)));
 	else
 	{
 		wid = wait(&st);
 		e->wid = wid;
-		g_dbg ? ft_dprintf(2, "[DBG: msh_exec_pwd: parent st(%d)wid(%d)]\n", st,wid) : 0;
+		g_dbg ? ft_dprintf(2, " [DBG: msh_exec_pwd: parent st(%d)wid(%d)]\n", st,wid) : 0;
 		return ((e->st = st));
 	}
-	g_dbg ? ft_dprintf(2, "[DBG: msh_exec_pwd: end]\n") : 0;
+	g_dbg ? ft_dprintf(2, " [DBG: msh_exec_pwd: end]\n") : 0;
 	return (255);
 }
 
@@ -277,7 +281,7 @@ int			msh_exec(t_shenv *e)
 		g_dbg ? ft_dprintf(2, "[DBG: msh_exec: exit:st_p(%d)]\n", st_p) : 0;
 		return (st_p);
 	}
-	else if ((st_b == 1 && !st_d && SHR8(st_p) == 255) || !g_shenv->signal_recv)
+	else if (st_b == 1 && !st_d && SHR8(st_p) == 255 && !e->signal_recv)
 		ft_dprintf(2, "minishell: %s: Unknown command\n", *e->cmdv);
 	else
 		e->signal_recv = 0;
@@ -286,29 +290,33 @@ int			msh_exec(t_shenv *e)
 
 void		msh_print_prompt(void)
 {
-	char	*buf = 0;
-	char	*home = 0;
-	size_t	idx = 0;
+	char	*buf;
+	char	*home;
+	size_t	idx;
 
 	g_dbg ? ft_dprintf(2, "[DBG: msh_print_prompt: start p(%d) sr(%d)]\n",g_shenv->prompt_printed,g_shenv->signal_recv) : 0;
+	idx = 1;
 	buf = getcwd(0, 0);
 	home = get_string_value("HOME");
 	g_dbg ? ft_dprintf(2, "[DBG: msh_print_prompt: home(%s) buf(%s)]\n",home,buf) : 0;
-	if (home && buf)
+	if (!g_shenv->prompt_printed)
 	{
-		idx = ft_strlen(home);
-		if (ft_strnequ(buf, home, idx))
-			buf[idx - 1] = '~';
-		if (buf[idx - 1] == '~')
-			ft_printf("%s msh$ ", buf + idx - 1);
-		else
+		if (home != 0 && buf != 0)
+		{
+			idx = ft_strlen(home);
+			if (ft_strnequ(buf, home, idx))
+				buf[idx - 1] = '~';
+			if (buf[idx - 1] == '~')
+				ft_printf("%s msh$ ", buf + idx - 1);
+			else
+				ft_printf("%s msh$ ", buf);
+			FREE(home);
+		}
+		else if (buf)
 			ft_printf("%s msh$ ", buf);
-		FREE(home);
+		else
+			ft_printf("msh$ ");
 	}
-	else if (buf)
-		ft_printf("%s msh$ ", buf);
-	else
-		ft_printf("msh$ ");
 	FREE(buf);
 	g_shenv->prompt_printed = 1;
 }
@@ -321,10 +329,6 @@ char		*msh_readline(void)
 	if (!g_shenv->prompt_printed || !g_shenv->signal_recv)
 	{
 		msh_print_prompt();
-	}
-	else
-	{
-		g_shenv->prompt_printed = 0;
 	}
 	g_shenv->signal_recv = 0;
 	if (!get_next_line(0, &ln))
@@ -387,9 +391,8 @@ char		*msh_expand(char *token)
 	free(token);
 	if ((tmp = ft_strchr(ret, '~')))
 	{
-		ft_strdel(&ret);
-		g_shenv->home = get_string_value("HOME");
-		if (!(rett = ft_strjoin(g_shenv->home, tmp + 1)))
+		if (!(g_shenv->home = get_string_value("HOME")) ||
+			!(rett = ft_strjoin(g_shenv->home, tmp + 1)))
 			msh_panic("Memory allocation error in msh_expand ~");
 		free(g_shenv->home);
 	}
@@ -398,6 +401,7 @@ char		*msh_expand(char *token)
 		if (!(rett = msh_dollar(ret, tmp)))
 			msh_panic("Memory allocation error in msh_expand $");
 	}
+	FREE(ret);
 	g_dbg ? ft_dprintf(2, "[DBG: msh_expand: end:ret(%s)]\n", rett) : 0;
 	return (rett);
 }
@@ -507,7 +511,6 @@ static void	init_shenv(t_shenv *shenv, t_margs *mg)
 	i = -1;
 	while (mg->e[++i] && i < shenv->envlst->list_size)
 	{
-		/* if (ft_strnequ("SHLVL=", mg->e[i]) */
 		shenv->envlst->list[i] = ft_strdup(mg->e[i]);
 		shenv->envlst->list_len++;
 	}
@@ -522,9 +525,9 @@ static void	init_shenv(t_shenv *shenv, t_margs *mg)
 	shenv->dl = 0;
 	shenv->cmdc = 0;
 	shenv->ret = 0;
-	shenv->exit_called = 0;
 	shenv->home = NULL;
 	shenv->path = NULL;
+	shenv->exit_called = 0;
 	shenv->prompt_printed = 0;
 	shenv->signal_recv = 0;
 }

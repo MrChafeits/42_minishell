@@ -107,8 +107,6 @@ char		**strvec_resize(char **array, int nsize)
 		new[i] = NULL;
 	FREE(array);
 	return (new);
-	/* return (realloc(array, nsize * sizeof(char*))); */
-	/* return (ft_realloc(array, strvec_len(array), nsize * sizeof(char*))); */
 }
 
 char		**strvec_copy(char **array)
@@ -134,14 +132,12 @@ void		strvec_flush(char **array)
 	register int	i;
 	uintptr_t		p;
 
-	/* ft_dprintf(2, "[DBG: strvec_flush: len(%d)]\n", strvec_len(array)); */
 	if (!array)
 		return ;
 	i = 0;
 	p = 0;
 	while (array[i] && *array[i])
 	{
-		/* ft_dprintf(2,"[DBG: strvec_flush: p(%#zx) array[%02d](%p)(%s)]\n",p,i,array[i],array[i]); */
 		if (p == 0 || ABSUB((uintptr_t)(array[i]),p) < (uintptr_t)(array[0]))
 		{
 			FREE(array[i]);
@@ -191,7 +187,6 @@ int			strvec_nremove(char **array, char *name, int nl)
 	register int	j;
 	char			*x;
 
-	ft_dprintf(2, "[DBG: strlist_nremove: name(%s)]\n", name);
 	if (array == 0)
 		return (0);
 	i = -1;
@@ -307,28 +302,23 @@ t_strlst	*strlist_resize(t_strlst *sl, int n)
 
 	if (sl == 0)
 		return (sl = strlist_new(n));
-	/* ft_dprintf(2, "[DBG: strlist_resize: n(%d)]\n", n); */
-	/* ft_dprintf(2, "[DBG: strlist_resize: size(%d)]\n", sl->list_size); */
-	/* ft_dprintf(2, "[DBG: strlist_resize: len(%d)]\n", sl->list_len); */
 	tmp = NULL;
 	if (n > sl->list_size)
 	{
 		tmp = malloc((n + 1) * sizeof(*tmp));
-		/* strvec_resize(sl->list, (n != sl->list_size * 2 ? n * 2 : n) + 1); */
 		i = -1;
 		while (++i < sl->list_len)
 			tmp[i] = sl->list[i];
 		i = sl->list_size;
-		/* ft_dprintf(2, "[DBG: strlist_resize: size-1(%d)]\n", i); */
 		while (i < n)
 		{
-			/* ft_dprintf(2, "[DBG: strlist_resize: i(%d)]\n", i); */
 			/* sl->list[i] = NULL; */
 			tmp[i] = NULL;
 			i++;
 		}
+		FREE(sl->list);
+		sl->list = tmp;
 		sl->list_size = n;
-		ft_dprintf(2, "[DBG: strlist_resize: p1(%p)p2(%p)]\n", sl->list, tmp);
 	}
 	return (sl);
 }
@@ -381,7 +371,6 @@ int			strlist_nremove(t_strlst *sl, char *s, int nl)
 {
 	int r;
 
-	ft_dprintf(2, "[DBG: strlist_nremove: s(%s)]\n", s);
 	if (sl == 0 || sl->list == 0 || sl->list_len == 0)
 		return (0);
 	r = strvec_nremove(sl->list, s, nl);
