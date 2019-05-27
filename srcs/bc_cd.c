@@ -103,7 +103,7 @@ void		bind_var_value(char *name, char *value, int alloc)
 
 	g_dbg ? ft_dprintf(2, "[DBG: bind_var_value: start(%s)(%s)]\n",name,value) : 0;
 	if (name && strlist_nsearch(g_shenv->envlst, name) >= 0)
-		strlist_nremove(g_shenv->envlst, name);
+		strlist_nremove(g_shenv->envlst, name, ft_strlen(name));
 	var = ft_strjoin_free(name, "=", alloc == 1 || alloc == 3 ? 'L' : 0); //XXX
 	var = ft_strjoin_free(var, value, alloc >= 2 ? ('L' + 'R') : 'L'); //XXX - potential issue
 	g_dbg ? ft_dprintf(2, "[DBG: bind_var_value: var(%s)]\n",var) : 0;

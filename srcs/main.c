@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/24 20:49:13 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/26 20:38:42 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,30 +48,43 @@ void		exit_builtin(t_shenv *e)
 	exit(st);
 }
 
+int			ft_strcncmp(const char *s1, const char *s2, int c)
+{
+	register const unsigned char	*p1;
+	register const unsigned char	*p2;
+	unsigned char					c1;
+	unsigned char					c2;
+
+	p1 = (const unsigned char*)s1;
+	p2 = (const unsigned char*)s2;
+	c1 = 0;
+	c2 = 0;
+	while (c1 == c2)
+	{
+		c1 = (unsigned char)*s1++;
+		c2 = (unsigned char)*s2++;
+		if (c1 == '\0' || c1 == (unsigned)c || c2 == (unsigned)c)
+			return (c1 - c2);
+	}
+	return (c1 - c2);
+}
+
 void		setenv_builtin(t_shenv *e)
 {
-	int r;
-	/* t_wdtk	*new; */
-	/* t_wlst	*t; */
+	char	*t;
+	int		r;
 	
 	g_dbg ? ft_dprintf(2, "[DBG: setenv: start]\n") : 0;
+	g_dbg ? ft_dprintf(2, "[DBG: setenv: l(%d)s(%d)]\n", e->envlst->list_len, e->envlst->list_size) : 0;
 	if (!e || e->cmdc != 2 || !e->cmdv[1] || !e->envlst)
 		return ;
 	g_dbg ? ft_dprintf(2, "[DBG: setenv: e->cmdv[1](%s)]\n", e->cmdv[1]) : 0;
-	if (ft_strlen(e->cmdv[1]) < 3 || !ft_strchr(e->cmdv[1], '='))
+	if (ft_strlen(e->cmdv[1]) < 3 || !(t = ft_strchr(e->cmdv[1], '=')))
 		return ;
-	r = strlist_remove(e->envlst, e->cmdv[1]);
-	g_dbg ? ft_dprintf(2, "[DBG: setenv: list_len(%d)]\n", e->envlst->list_len) : 0;
-	g_dbg ? ft_dprintf(2, "[DBG: setenv: list_size(%d)]\n", e->envlst->list_size) : 0;
+	r = strlist_nremove(e->envlst, e->cmdv[1], t - e->cmdv[1]);
+	g_dbg ? ft_dprintf(2, "[DBG: setenv: r(%d)]\n", r) : 0;
 	e->envlst = strlist_add(e->envlst, e->cmdv[1]);
-	/* new = make_bare_word(e->cmdv[1]); */
-	g_dbg ? ft_dprintf(2, "[DBG: setenv: list_len(%d)]\n", e->envlst->list_len) : 0;
-	g_dbg ? ft_dprintf(2, "[DBG: setenv: list_size(%d)]\n", e->envlst->list_size) : 0;
-	/* t = REVLIST(e->list, t_wlst*); */
-	/* t = make_word_list(new, t); */
-	/* e->list = REVLIST(t, t_wlst*); */
-	/* strvec_dispose(e->envp); */
-	/* e->envp = strvec_from_word_list(e->list, 1, 0, 0); */
+	g_dbg ? ft_dprintf(2, "[DBG: setenv: l(%d)s(%d)]\n", e->envlst->list_len, e->envlst->list_size) : 0;
 	g_dbg ? ft_dprintf(2, "[DBG: setenv: end]\n") : 0;
 }
 
@@ -83,13 +96,14 @@ void		unsetenv_builtin(t_shenv *e)
 	if (!e || e->cmdc != 2 || !e->cmdv[1] || !e->envlst)
 		return ;
 	g_dbg ? ft_dprintf(2, "[DBG: unsetenv: e->cmdv[1](%s)]\n", e->cmdv[1]) : 0;
-	r = strlist_nremove(e->envlst, e->cmdv[1]);
+	r = strlist_nremove(e->envlst, e->cmdv[1], ft_strlen(e->cmdv[1]));
 	g_dbg ? ft_dprintf(2, "[DBG: unsetenv: end]\n") : 0;
 }
 
 void		msh_sigint_sub(int sig)
 {
-	g_dbg ? ft_dprintf(2, "[DBG: msh_sigint_sub: start:sig(%d)]\n", sig) : 0;
+	g_dbg ? ft_dprintf(2, "[DBG: msh_sigint_sub: start:sig(%d)sr(%d)]\n", sig,g_shenv->signal_recv) : 0;
+	g_shenv->signal_recv = !g_shenv->signal_recv ? sig : 0;
 	if (sig == SIGINT)
 	{
 		write(1, "\n", 1);
@@ -99,12 +113,15 @@ void		msh_sigint_sub(int sig)
 
 void		msh_sigint(int sig)
 {
-	g_dbg ? ft_dprintf(2, "[DBG: msh_sigint: start:sig(%d)]\n", sig) : 0;
+	g_dbg ? ft_dprintf(2, "[DBG: msh_sigint: start:sig(%d)sr(%d)]\n", sig,g_shenv->signal_recv) : 0;
 	if (sig == SIGINT)
 	{
 		write(1, "\n", 1);
-		msh_print_prompt();
-	g_shenv->prompt_printed = 0;
+		if (!g_shenv->prompt_printed && !g_shenv->signal_recv)
+		{
+			msh_print_prompt();
+			g_shenv->prompt_printed = 1;
+		}
 		signal(SIGINT, msh_sigint);
 	}
 }
@@ -146,8 +163,10 @@ int			msh_exec_path(t_shenv *e)
 		ft_dprintf(2, "minishell: %s: Error forking\n", *e->cmdv);
 	else
 		i = wait(&e->ret);
+	FREE(e->home);
 	strvec_dispose(e->path);
 	e->path = NULL;
+	e->signal_recv = 1;
 	g_dbg ? ft_dprintf(2, "[DBG: msh_exec_path: end:ret(%d)i(%d)ex(%d)]\n", e->ret,i,ex) : 0;
 	return (e->ret);
 }
@@ -227,6 +246,9 @@ int			msh_exec(t_shenv *e)
 	int	st_d;
 	int	st_p;
 
+	st_b = 0;
+	st_d = 0;
+	st_p = 0;
 	g_dbg ? ft_dprintf(2, "[DBG: msh_exec: start:e->cmdv[0](%s)]\n", e->cmdv[0]) : 0;
 	st_b = msh_exec_builtin(e);
 	g_dbg ? ft_dprintf(2, "[DBG: msh_exec: exec_builtin:st_b(%d)]\n", st_b) : 0;
@@ -249,13 +271,16 @@ int			msh_exec(t_shenv *e)
 		}
 	}
 	st_p = msh_exec_path(e);
-	g_dbg ? ft_dprintf(2, "[DBG: msh_exec: exec_path:st_p(%d)]\n", st_p) : 0;
+	g_dbg ? ft_dprintf(2, "[DBG: msh_exec:exec_path st_b(%d)st_d(%d)st_p(%d)]\n", st_b,st_d,st_p) : 0;
 	if (CHKEP(st_p) && WIFEXITED(st_p))
 	{
 		g_dbg ? ft_dprintf(2, "[DBG: msh_exec: exit:st_p(%d)]\n", st_p) : 0;
 		return (st_p);
 	}
-	ft_dprintf(2, "minishell: %s: Unknown command\n", *e->cmdv);
+	else if ((st_b == 1 && !st_d && SHR8(st_p) == 255) || !g_shenv->signal_recv)
+		ft_dprintf(2, "minishell: %s: Unknown command\n", *e->cmdv);
+	else
+		e->signal_recv = 0;
 	return (127);
 }
 
@@ -265,7 +290,7 @@ void		msh_print_prompt(void)
 	char	*home = 0;
 	size_t	idx = 0;
 
-	g_dbg ? ft_dprintf(2, "[DBG: msh_print_prompt: start]\n") : 0;
+	g_dbg ? ft_dprintf(2, "[DBG: msh_print_prompt: start p(%d) sr(%d)]\n",g_shenv->prompt_printed,g_shenv->signal_recv) : 0;
 	buf = getcwd(0, 0);
 	home = get_string_value("HOME");
 	g_dbg ? ft_dprintf(2, "[DBG: msh_print_prompt: home(%s) buf(%s)]\n",home,buf) : 0;
@@ -280,8 +305,10 @@ void		msh_print_prompt(void)
 			ft_printf("%s msh$ ", buf);
 		FREE(home);
 	}
-	else
+	else if (buf)
 		ft_printf("%s msh$ ", buf);
+	else
+		ft_printf("msh$ ");
 	FREE(buf);
 	g_shenv->prompt_printed = 1;
 }
@@ -290,8 +317,16 @@ char		*msh_readline(void)
 {
 	char	*ln;
 
-	g_dbg ? ft_dprintf(2, "[DBG: msh_readline: start]\n") : 0;
-	msh_print_prompt();
+	g_dbg ? ft_dprintf(2, "[DBG: msh_readline: start p(%d) sr(%d)]\n",g_shenv->prompt_printed,g_shenv->signal_recv) : 0;
+	if (!g_shenv->prompt_printed || !g_shenv->signal_recv)
+	{
+		msh_print_prompt();
+	}
+	else
+	{
+		g_shenv->prompt_printed = 0;
+	}
+	g_shenv->signal_recv = 0;
 	if (!get_next_line(0, &ln))
 		exit(g_shenv->ret);
 	g_dbg ? ft_dprintf(2, "[DBG: msh_readline: end]\n") : 0;
@@ -437,6 +472,7 @@ int			msh_repl(void)
 		msh_parse(boy);
 		FREE(ln);
 		FREE(dink);
+		g_shenv->prompt_printed = 0;
 	}
 	g_dbg ? ft_dprintf(2, "[DBG: msh_repl: end:ret(%d)]\n",g_shenv->ret) : 0;
 	return (g_shenv->ret);
@@ -490,6 +526,7 @@ static void	init_shenv(t_shenv *shenv, t_margs *mg)
 	shenv->home = NULL;
 	shenv->path = NULL;
 	shenv->prompt_printed = 0;
+	shenv->signal_recv = 0;
 }
 /*TODO: separate environment variable structure so VARNAME and VARVALUE are
  *      stored separately */
@@ -516,21 +553,6 @@ int			main(int argc, char **argv, char **envp, char **aplv)
 	m.e = envp;
 	m.a = aplv;
 	init_shenv(&e, &m);
-	/* e.m = &m; */
-	/* e.envp = strvec_copy(envp); */
-	/* e.list = strvec_to_word_list(e.envp, 1, 0); */
-	/* e.sl = strlist_new(0); */
-	/* e.sl->list = strvec_copy(envp); */
-	/* e.sl->list_len = strvec_len(envp); */
-	/* e.sl->list_size = e.sl->list_len; */
-	/* while (envp && envp[++i]) */
-	/* { */
-	/* 	if (ft_strnequ("HOME=", envp[i], 5)) */
-	/* 		e.home = ft_strdup(envp[i] + 5); */
-	/* 	if (ft_strnequ("PATH=", envp[i], 5)) */
-	/* 		e.path = ft_strsplit(envp[i] + 5, ':'); */
-	/* } */
-	/* e.envplen = i; */
 	g_shenv = &e;
 	if (g_dbg == 3)
 	{

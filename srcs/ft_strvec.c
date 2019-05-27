@@ -185,16 +185,15 @@ int			strvec_remove(char **array, char *name)
 	return (0);
 }
 
-int			strvec_nremove(char **array, char *name)
+int			strvec_nremove(char **array, char *name, int nl)
 {
 	register int	i;
 	register int	j;
-	int				nl;
 	char			*x;
 
+	ft_dprintf(2, "[DBG: strlist_nremove: name(%s)]\n", name);
 	if (array == 0)
 		return (0);
-	nl = ft_strlen(name);
 	i = -1;
 	while (array[++i])
 		if (ft_strnequ(name, array[i], nl))
@@ -308,9 +307,9 @@ t_strlst	*strlist_resize(t_strlst *sl, int n)
 
 	if (sl == 0)
 		return (sl = strlist_new(n));
-	ft_dprintf(2, "[DBG: strlist_resize: n(%d)]\n", n);
-	ft_dprintf(2, "[DBG: strlist_resize: size(%d)]\n", sl->list_size);
-	ft_dprintf(2, "[DBG: strlist_resize: len(%d)]\n", sl->list_len);
+	/* ft_dprintf(2, "[DBG: strlist_resize: n(%d)]\n", n); */
+	/* ft_dprintf(2, "[DBG: strlist_resize: size(%d)]\n", sl->list_size); */
+	/* ft_dprintf(2, "[DBG: strlist_resize: len(%d)]\n", sl->list_len); */
 	tmp = NULL;
 	if (n > sl->list_size)
 	{
@@ -320,7 +319,7 @@ t_strlst	*strlist_resize(t_strlst *sl, int n)
 		while (++i < sl->list_len)
 			tmp[i] = sl->list[i];
 		i = sl->list_size;
-		ft_dprintf(2, "[DBG: strlist_resize: size-1(%d)]\n", i);
+		/* ft_dprintf(2, "[DBG: strlist_resize: size-1(%d)]\n", i); */
 		while (i < n)
 		{
 			/* ft_dprintf(2, "[DBG: strlist_resize: i(%d)]\n", i); */
@@ -340,8 +339,8 @@ t_strlst	*strlist_add(t_strlst *sl, char *s)
 		return (NULL);
 	if (sl->list_len + 1 >= sl->list_size)
 	{
-		ft_dprintf(2, "[DBG: strlist_add: len(%d)]\n", sl->list_len);
-		ft_dprintf(2, "[DBG: strlist_add: size(%d)]\n", sl->list_size);
+		/* ft_dprintf(2, "[DBG: strlist_add: len(%d)]\n", sl->list_len); */
+		/* ft_dprintf(2, "[DBG: strlist_add: size(%d)]\n", sl->list_size); */
 		sl = strlist_resize(sl, sl->list_size * 2);
 	}
 	sl->list[sl->list_len] = ft_strdup(s);
@@ -378,13 +377,14 @@ int			strlist_remove(t_strlst *sl, char *s)
 	return (r);
 }
 
-int			strlist_nremove(t_strlst *sl, char *s)
+int			strlist_nremove(t_strlst *sl, char *s, int nl)
 {
 	int r;
 
+	ft_dprintf(2, "[DBG: strlist_nremove: s(%s)]\n", s);
 	if (sl == 0 || sl->list == 0 || sl->list_len == 0)
 		return (0);
-	r = strvec_nremove(sl->list, s);
+	r = strvec_nremove(sl->list, s, nl);
 	if (r)
 		sl->list_len--;
 	return (r);
