@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/22 16:48:43 by callen            #+#    #+#             */
-/*   Updated: 2019/05/19 17:36:18 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/27 23:15:57 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ int			echo_builtin_ash(int argc, char **argv)
 	int		nflag;
 	int		eflag;
 
+	msh_debug_print("echo_builtin_ash: start");
 	nflag = 0;
 	eflag = 0;
 	ap = argv;
@@ -90,6 +91,7 @@ int			echo_builtin_ash(int argc, char **argv)
 	if (!nflag)
 		ft_putchar('\n');
 	return (0);
+	msh_debug_print("echo_builtin_ash: end");
 }
 
 int			echo_builtin_cmd(int argc, char **argv)
@@ -98,7 +100,7 @@ int			echo_builtin_cmd(int argc, char **argv)
 	char	*p;
 	char	c;
 
-	g_dbg ? ft_dprintf(2, "[DBG: echo_builtin_cmd: start]\n") : 0;
+	msh_debug_print("echo_builtin_cmd: start");
 	ap = argv;
 	if (argc)
 		ap++;
@@ -110,7 +112,7 @@ int			echo_builtin_cmd(int argc, char **argv)
 			ft_putchar(' ');
 	}
 	ft_putchar('\n');
-	g_dbg ? ft_dprintf(2, "[DBG: echo_builtin_cmd: end]\n") : 0;
+	msh_debug_print("echo_builtin_cmd: end");
 	return (0);
 }
 
@@ -118,14 +120,14 @@ void		echo_builtin(t_shenv *e)
 {
 	int t;
 	
-	g_dbg ? ft_dprintf(2, "[DBG: echo_builtin: start]\n") : 0;
+	msh_debug_print("echo_builtin: start");
 	if (e)
 	{
-		if (0)
+		if (1)
 			t = echo_builtin_cmd(e->cmdc, e->cmdv);
 		else
 			t = echo_builtin_ash(e->cmdc, e->cmdv);
 	}
 	e->ret = !e->ret ? t : e->ret;
-	g_dbg ? ft_dprintf(2, "[DBG: echo_builtin: end]\n") : 0;
+	msh_debug_print("echo_builtin: end");
 }

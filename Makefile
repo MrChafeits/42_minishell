@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/05/24 12:55:07 by callen           ###   ########.fr        #
+#    Updated: 2019/05/27 22:01:23 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -36,7 +36,8 @@ FRAMWRKS :=
 SRC := main.c \
 bc_cd.c \
 bc_echo.c \
-ft_strvec.c
+ft_strvec.c \
+quote_str.c
 
 OBJ := $(addprefix $(OBJDIR)/, $(SRC:.c=.o))
 DBG := $(addprefix $(DBGDIR)/, $(SRC:.c=.o))

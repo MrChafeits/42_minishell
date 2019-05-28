@@ -1,6 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_strvec.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/05/27 23:16:24 by callen            #+#    #+#             */
+/*   Updated: 2019/05/27 23:18:51 by callen           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "msh_strvec.h"
 #include "ft_stdio.h"
-//array.c
+
+//array.c 2 functions
 t_wdtk		*make_bare_word(const char *s)
 {
 	t_wdtk *w;
@@ -21,8 +34,7 @@ t_wlst		*make_word_list(t_wdtk *x, t_wlst *l)
 	return (w);
 }
 
-//Generic List list.c
-
+//Generic List list.c 3 functions
 int			list_length(t_glist *lst)
 {
 	register int i;
@@ -65,7 +77,7 @@ t_glist		*list_append(t_glist *head, t_glist *tail)
 	return (head);
 }
 
-// Strvec lib/sh/stringvec.c
+// Strvec lib/sh/stringvec.c 11 functions
 #ifdef FREE
 # undef FREE
 #endif
@@ -261,7 +273,7 @@ t_wlst		*strvec_to_word_list(char **array, int alloc, int start)
 	return (REVLIST(list, t_wlst*));
 }
 
-/*   stringlist.c   */
+/*   stringlist.c 17 functions */
 #ifdef FREE
 # undef FREE
 #endif
@@ -329,8 +341,6 @@ t_strlst	*strlist_add(t_strlst *sl, char *s)
 		return (NULL);
 	if (sl->list_len + 1 >= sl->list_size)
 	{
-		/* ft_dprintf(2, "[DBG: strlist_add: len(%d)]\n", sl->list_len); */
-		/* ft_dprintf(2, "[DBG: strlist_add: size(%d)]\n", sl->list_size); */
 		sl = strlist_resize(sl, sl->list_size * 2);
 	}
 	sl->list[sl->list_len] = ft_strdup(s);

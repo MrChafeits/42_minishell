@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/26 18:57:24 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/27 22:57:59 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ struct	s_env
 	int			envplen;
 	int			wid;
 	int			pwd_ex;
+	int			path_ex;
 	int			st;
 	int			dl;
 	int			cmdc;
@@ -136,5 +137,8 @@ char	*get_string_value(const char *v);
 char	*get_working_directory(const char *v);
 char	*sh_makepath(const char *p, const char *d, int f);
 char	*get_string_value(const char *var);
+char	**quote_strsplit(char *s, int c);
+int		quote_wordcount(char *s, char c);
+void	msh_debug_print(char *fmt, ...);
 
 #endif
