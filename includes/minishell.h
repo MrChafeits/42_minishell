@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/27 22:57:59 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/28 22:24:46 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ struct	s_env
 	int			dl;
 	int			cmdc;
 	int			ret;
+	int			is_echo;
 	int			prompt_printed;
 	int			signal_recv;
 	int			exit_called;

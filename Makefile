@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/05/27 22:01:23 by callen           ###   ########.fr        #
+#    Updated: 2019/05/28 13:43:12 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME := minishell
 DNAM := d_$(NAME)
 ANAM := a_$(NAME)
 
-CC ?= clang
+CC := clang
 # CC := /nfs/2018/c/callen/.brew/bin/gcc-9
 CFLAGS := -Wall -Wextra -Werror
 DFLAGS := -Wall -Wextra -g
@@ -58,10 +58,13 @@ NORME := $(addsuffix *.h,$(INCDIR)/) $(addsuffix *.c,$(SRCDIR)/)
 .PHONY: all
 all: $(NAME)
 
-$(NAME): $(OBJDIR) $(OBJ)
-	make -C libft all
+$(NAME): libs $(OBJDIR) $(OBJ)
 	@$(CC) $(INCFLAGS) $(LIBFLAGS) -o $(NAME) $(OBJ)
 	@echo "Compiled $(NAME)"
+
+.PHONY: libs
+libs:
+	make -j4 -C libft all
 
 $(addprefix $(OBJDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
 	@$(CC) $(INCFLAGS) $(CFLAGS) -c -o $@ $<
@@ -71,7 +74,7 @@ $(OBJDIR):
 
 .PHONY: clean
 clean:
-	make -C libft clean
+	make -sC libft clean
 	rm -Rf $(OBJDIR)
 
 .PHONY: fclean
@@ -87,12 +90,14 @@ f: asan
 
 .PHONY: d
 d: aclean
-	rm -rf $(ASNDIR)
 
 .PHONY: asan
-asan: $(ASNDIR) $(ASN)
-	@make -sC libft asan
+asan: asanlibs $(ASNDIR) $(ASN)
 	@$(CC) $(AFLAGS) $(INCFLAGS) $(ASANLIBS) -o $(ANAM) $(ASN)
+
+.PHONY: asanlibs
+asanlibs:
+	@make -j4 -C libft asan
 
 $(addprefix $(ASNDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
 	$(CC) $(AFLAGS) $(INCFLAGS) -c -o $@ $<
@@ -102,19 +107,23 @@ $(ASNDIR):
 
 .PHONY: aclean
 aclean:
+	make -sC libft aclean
 	rm -rf $(ANAM) $(ANAM).dSYM
+	rm -rf $(ASNDIR)
 
 .PHONY: j
 j: debug
 
 .PHONY: k
 k: dclean
-	rm -rf $(DBGDIR)
 
 .PHONY: debug
-debug: $(DBGDIR) $(DBG)
-	@make -sC libft debug
-	@$(CC) $(DFLAGS) $(INCFLAGS) $(DEBGLIBS) -o $(DNAM) $(addprefix $(SRCDIR)/, $(SRC))
+debug: debuglibs $(DBGDIR) $(DBG)
+	@$(CC) $(DFLAGS) $(INCFLAGS) $(DEBGLIBS) -o $(DNAM) $(DBG)
+
+.PHONY: debuglibs
+debuglibs:
+	@make -j4 -C libft debug
 
 $(addprefix $(DBGDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
 	$(CC) $(DFLAGS) $(INCFLAGS) -c -o $@ $<
@@ -124,7 +133,8 @@ $(DBGDIR):
 
 .PHONY: dclean
 dclean:
-	@make -C libft dclean
+	make -sC libft dclean
+	rm -rf $(DBGDIR)
 	rm -rf $(DNAM) $(DNAM).dSYM
 
 .PHONY: tags

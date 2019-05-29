@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/27 22:36:05 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/29 00:56:51 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -344,27 +344,73 @@ void		msh_panic(char *msg)
 	ft_dprintf(2, "minishell: %s\n", msg);
 	exit(1);
 }
+static const uint8_t	g_varctbl[256] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0,
+	0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+	1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+int			msh_varlen(const char *s)
+{
+	register int	i;
+	char			*p;
 
+	p = (char*)s;
+	if (!s || !p)
+		return (0);
+	if (*p == '$')
+		p++;
+	i = 0;
+	while (g_varctbl[(int)p[i]])
+		i++;
+	return (i);
+}
+
+#define VL (ln[0])
+#define RL (ln[1])
+#define CL (ln[2])
+#define HL (ln[3])
+//TODO: cleanup this function and fix infinite loop for 'echo $$PWD'
 char		*msh_dollar(char *ret, char *tmp)
 {
 	t_strlst		*l;
 	register int	i;
 	char			*r;
-	int				vl;
+	int				ln[4];
 
 	msh_debug_print("msh_dollar: start ret(%s)tmp(%s)",	ret, tmp);
 	if (!tmp || !*tmp || (r = NULL))
 		return (ret);
 	if (ft_strnequ("$?", tmp, 2))
-		return (ft_itoa(SHR8(g_shenv->ret) & 0xff));
-	vl = ft_strlen(tmp + 1);
+		return (ft_itoa(SHR8(g_shenv->ret)));
+	VL = msh_varlen(tmp);
+	msh_debug_print("msh_dollar: varlen(%d)", VL);
 	l = g_shenv->envlst;
 	i = -1;
-	while (vl && l && ++i < l->list_len)
+	while (VL && l && ++i < l->list_len)
 	{
-		if (ft_strnequ(l->list[i], tmp + 1, vl))
+		if (ft_strnequ(l->list[i], tmp + 1, VL))
 		{
-			r = ft_strdup(ft_strchr(l->list[i], '=') + 1);
+			HL = ft_strlen(ret) - VL + ft_strlen(ft_strchr(l->list[i], '=') + 1);
+			msh_debug_print("msh_dollar: hl(%d)", HL);
+			r = ft_strnew(HL);
+			ft_strncpy(r, ret, (RL = ft_strchr(ret, '$') - ret));
+			ft_strncpy(r + RL, ft_strchr(l->list[i], '=') + 1,
+					   (CL = ft_strlen(ft_strchr(l->list[i], '=') + 1)));
+			ft_strncpy(r + RL + CL, ret + RL + VL + 1,
+					   ft_strlen(ret + RL + VL + 1));
 			msh_debug_print("msh_dollar: found r(%s)", r);
 			return (r);
 		}
@@ -373,7 +419,15 @@ char		*msh_dollar(char *ret, char *tmp)
 	return (ret);
 }
 
-//subst.c subst.h
+#undef VL
+#undef RL
+#undef CL
+#undef HL
+
+/*
+**subst.c subst.h
+*/
+
 char		*msh_expand(char *token)
 {
 	char	*tmp;
@@ -381,7 +435,7 @@ char		*msh_expand(char *token)
 	char	*rett;
 
 	msh_debug_print("msh_expand: start token(%s)", token);
-	ret = ft_strdup(token); //XXX: leaks for unknown command, and others
+	ret = ft_strdup(token);
 	rett = ret;
 	free(token);
 	if ((tmp = ft_strchr(ret, '~')))
@@ -401,10 +455,8 @@ char		*msh_expand(char *token)
 	return (rett);
 }
 
-//subst.c subst.h
 char		**msh_tokenize(char *str)
 {
-	char	*tmp;
 	char	**tokens;
 	int		i;
 
@@ -414,10 +466,7 @@ char		**msh_tokenize(char *str)
 	i = -1;
 	while (tokens[++i])
 	{
-		tmp = ft_strtrim(tokens[i]);
-		free(tokens[i]);
-		tokens[i] = tmp;
-		if (ft_strchr(tokens[i], '~') || ft_strchr(tokens[i], '$'))
+		while (ft_strchr(tokens[i], '~') || ft_strchr(tokens[i], '$'))
 			tokens[i] = msh_expand(tokens[i]);
 		msh_debug_print("msh_tokenize: tokens[%d](%s)", i, tokens[i]);
 	}
@@ -573,7 +622,7 @@ int			main(int argc, char **argv, char **envp, char **aplv)
 	{
 		register int i;
 		register int l;
-		char *s = "echo \"  honkorio\t   bleb \" dink fort";
+		char *s = "echo \"\thonkorio  \t\t \t   bleb \" dink       fort";
 		char **t;
 		t = quote_strsplit(s, ' ');
 		l = strvec_len(t);
