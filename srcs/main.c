@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/29 00:56:51 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/30 01:14:34 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <pwd.h>
+#include <sys/types.h>
 
 void		msh_debug_print(char *fmt, ...)
 {
@@ -120,13 +122,9 @@ void		msh_sigint(int sig)
 		msh_debug_print("sigint: pp(%d) sr(%d)",
 					g_shenv->prompt_printed, g_shenv->signal_recv);
 		if (!g_shenv->path_ex && !g_shenv->pwd_ex)
-		{
 			msh_print_prompt();
-		}
 		else
-		{
 			g_shenv->path_ex = 0;
-		}
 		signal(SIGINT, msh_sigint);
 	}
 }
@@ -151,7 +149,7 @@ int			msh_exec_path(t_shenv *e)
 			{
 				s = ft_strjoin(e->path[i], "/");
 				s = ft_strjoin_free(s, *e->cmdv, 'L');
-				msh_debug_print("exec_path: child s(%s)", s);
+				/* msh_debug_print("exec_path: child s(%s)", s); */
 				if (!access(s, F_OK) && access(s, X_OK) < 0)
 				{
 					ft_dprintf(2, "minishell: %s: Permission denied\n", s);
@@ -344,16 +342,17 @@ void		msh_panic(char *msg)
 	ft_dprintf(2, "minishell: %s\n", msg);
 	exit(1);
 }
+
 static const uint8_t	g_varctbl[256] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0,
-	0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-	0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-	1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -362,6 +361,7 @@ static const uint8_t	g_varctbl[256] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
+
 int			msh_varlen(const char *s)
 {
 	register int	i;
@@ -370,10 +370,10 @@ int			msh_varlen(const char *s)
 	p = (char*)s;
 	if (!s || !p)
 		return (0);
-	if (*p == '$')
+	if (g_varctbl[(int)p[0]] & 4)
 		p++;
 	i = 0;
-	while (g_varctbl[(int)p[i]])
+	while (g_varctbl[(int)p[i]] & 3)
 		i++;
 	return (i);
 }
@@ -383,6 +383,21 @@ int			msh_varlen(const char *s)
 #define CL (ln[2])
 #define HL (ln[3])
 //TODO: cleanup this function and fix infinite loop for 'echo $$PWD'
+
+/*
+** Variable Dereference Substitution
+**
+** $* - flurgh
+** $@ - agh
+** $# - number of positional parameters
+** $? - exit status of most recently executed foreground pipeline
+** $- - current option flags as specified by invocation
+** $$ - process ID of the shell
+** $! - process ID of job most recently placed into the background
+** $0 - name of the shell or shell script
+** $_ - last word of the previous line of input
+*/
+
 char		*msh_dollar(char *ret, char *tmp)
 {
 	t_strlst		*l;
@@ -390,10 +405,10 @@ char		*msh_dollar(char *ret, char *tmp)
 	char			*r;
 	int				ln[4];
 
-	msh_debug_print("msh_dollar: start ret(%s)tmp(%s)",	ret, tmp);
+	msh_debug_print("msh_dollar: start ret(%s)tmp(%s)", ret, tmp);
 	if (!tmp || !*tmp || (r = NULL))
 		return (ret);
-	if (ft_strnequ("$?", tmp, 2))
+	if (ft_strnequ("$?", tmp, 2)) //TODO: add separate function to check specials
 		return (ft_itoa(SHR8(g_shenv->ret)));
 	VL = msh_varlen(tmp);
 	msh_debug_print("msh_dollar: varlen(%d)", VL);
@@ -406,17 +421,53 @@ char		*msh_dollar(char *ret, char *tmp)
 			HL = ft_strlen(ret) - VL + ft_strlen(ft_strchr(l->list[i], '=') + 1);
 			msh_debug_print("msh_dollar: hl(%d)", HL);
 			r = ft_strnew(HL);
-			ft_strncpy(r, ret, (RL = ft_strchr(ret, '$') - ret));
+			ft_strncpy(r, ret, (RL = tmp - ret));
+			msh_debug_print("msh_dollar: hl(%d) rl(%d) r(%s)", HL, RL, r);
 			ft_strncpy(r + RL, ft_strchr(l->list[i], '=') + 1,
 					   (CL = ft_strlen(ft_strchr(l->list[i], '=') + 1)));
+			msh_debug_print("msh_dollar: hl(%d) rl(%d) cl(%d) r(%s)", HL, RL, CL, r);
 			ft_strncpy(r + RL + CL, ret + RL + VL + 1,
 					   ft_strlen(ret + RL + VL + 1));
+			msh_debug_print("msh_dollar: hl(%d) rl(%d) cl(%d) r(%s)", HL, RL, CL, r);
 			msh_debug_print("msh_dollar: found r(%s)", r);
-			return (r);
+			break ;
 		}
 	}
+	g_shenv->exp_dollar = 1;
+	r = !r ? ft_strdup(ret) : r;
 	msh_debug_print("msh_dollar: end r(\"%s\")ret(%s)", r, ret);
-	return (ret);
+	return (r);
+}
+
+char		*msh_tilde(char *ret, char *tmp)
+{
+	char			*r[2];
+	static char		*home;;
+	struct passwd	*entry;
+	int				ln[4];
+
+	RET_IF(tmp[1] == '~' || tmp[1] == '$', ft_strdup(ret)); //TODO: fix for /~/ and others
+	msh_debug_print("msh_tilde: start ret(%s)tmp(%s)", ret, tmp);
+	r[0] = get_string_value("HOME");
+	if (r[0] == 0)
+	{
+		if (!home)
+		{
+			entry = getpwuid(getuid());
+			if (entry)
+				home = ft_strdup(entry->pw_dir);
+		}
+		r[0] = ft_strdup(home);
+	}
+	msh_debug_print("msh_tilde: ret(%s)tmp(%s)", ret, tmp);
+	HL = ft_strlen(ret) - 1 + ft_strlen(r[0]);
+	r[1] = ft_strnew(HL);
+	ft_strncpy(r[1], ret, (RL = tmp - ret));
+	ft_strncpy(r[1] + RL, r[0], (CL = ft_strlen(r[0]) + 1));
+	ft_strncpy(r[1] + RL + CL, ret + RL + 1, ft_strlen(ret + RL + 1));
+	msh_debug_print("msh_tilde: end r[1](\"%s\")ret(%s)", r[1], ret);
+	free(r[0]);
+	return (r[1]);
 }
 
 #undef VL
@@ -440,8 +491,7 @@ char		*msh_expand(char *token)
 	free(token);
 	if ((tmp = ft_strchr(ret, '~')))
 	{
-		if (!(g_shenv->home = get_string_value("HOME")) ||
-			!(rett = ft_strjoin(g_shenv->home, tmp + 1)))
+		if (!(rett = msh_tilde(ret, tmp)))
 			msh_panic("Memory allocation error in msh_expand ~");
 		free(g_shenv->home);
 	}
@@ -450,9 +500,37 @@ char		*msh_expand(char *token)
 		if (!(rett = msh_dollar(ret, tmp)))
 			msh_panic("Memory allocation error in msh_dollar");
 	}
+	if (ft_strequ(ret, rett))
+		g_shenv->expand_var = 0;
 	free(ret);
 	msh_debug_print("msh_expand: end rett(%s)", rett);
 	return (rett);
+}
+
+int			check_token_sub(const char *tok)
+{
+	static char	*rep[4];
+
+	msh_debug_print("check_token_sub: start tok(%s)", tok);
+	if (!rep[0])
+		rep[0] = ft_strchr(tok, '~');
+	else
+	{
+		rep[1] = rep[0];
+		rep[0] = ft_strchr(tok, '~');
+	}
+	if (rep[0] && rep[0] != rep[1])
+		return (1);
+	if (!rep[2])
+		rep[2] = ft_strchr(tok, '$');
+	else
+	{
+		rep[3] = rep[2];
+		rep[2] = ft_strchr(tok, '$');
+	}
+	if (rep[2] && rep[2] != rep[3])
+		return (1);
+	return (0);
 }
 
 char		**msh_tokenize(char *str)
@@ -466,8 +544,11 @@ char		**msh_tokenize(char *str)
 	i = -1;
 	while (tokens[++i])
 	{
-		while (ft_strchr(tokens[i], '~') || ft_strchr(tokens[i], '$'))
+		g_shenv->expand_var = 1;
+		while (g_shenv->expand_var && check_token_sub(tokens[i]))
+		{
 			tokens[i] = msh_expand(tokens[i]);
+		}
 		msh_debug_print("msh_tokenize: tokens[%d](%s)", i, tokens[i]);
 	}
 	msh_debug_print("msh_tokenize: end");
