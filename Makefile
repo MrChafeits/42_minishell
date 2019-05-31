@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/05/28 13:43:12 by callen           ###   ########.fr        #
+#    Updated: 2019/05/30 13:46:34 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,17 +20,17 @@ CFLAGS := -Wall -Wextra -Werror
 DFLAGS := -Wall -Wextra -g
 AFLAGS := $(DFLAGS) -fsanitize=address
 
-LIBDIR := libft
-INCDIR := includes
-OBJDIR := .obj
-DBGDIR := .dbg
-ASNDIR := .asn
-SRCDIR := srcs
+LIBDIR := libft/
+INCDIR := includes/
+OBJDIR := .obj/
+DBGDIR := .dbg/
+ASNDIR := .asn/
+SRCDIR := srcs/
 
-INCFLAGS := -I$(INCDIR) -I$(LIBDIR)/$(INCDIR)
+INCFLAGS := -I$(INCDIR) -I$(LIBDIR)$(INCDIR)
 LIBFLAGS := -L$(LIBDIR) -lft
-DEBGLIBS := $(LIBDIR)/d_libft.a
-ASANLIBS := $(LIBDIR)/a_libft.a
+DEBGLIBS := $(LIBDIR)d_libft.a
+ASANLIBS := $(LIBDIR)a_libft.a
 FRAMWRKS :=
 
 SRC := main.c \
@@ -39,9 +39,9 @@ bc_echo.c \
 ft_strvec.c \
 quote_str.c
 
-OBJ := $(addprefix $(OBJDIR)/, $(SRC:.c=.o))
-DBG := $(addprefix $(DBGDIR)/, $(SRC:.c=.o))
-ASN := $(addprefix $(ASNDIR)/, $(SRC:.c=.o))
+OBJ := $(addprefix $(OBJDIR), $(SRC:.c=.o))
+DBG := $(addprefix $(DBGDIR), $(SRC:.c=.o))
+ASN := $(addprefix $(ASNDIR), $(SRC:.c=.o))
 
 NRM := $(shell which pynorme)
 
@@ -53,7 +53,7 @@ ifeq ($(NRM),)
 	fi)"
 endif
 
-NORME := $(addsuffix *.h,$(INCDIR)/) $(addsuffix *.c,$(SRCDIR)/)
+NORME := $(addsuffix *.h,$(INCDIR)) $(addsuffix *.c,$(SRCDIR))
 
 .PHONY: all
 all: $(NAME)
@@ -66,7 +66,7 @@ $(NAME): libs $(OBJDIR) $(OBJ)
 libs:
 	make -j4 -C libft all
 
-$(addprefix $(OBJDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
+$(addprefix $(OBJDIR), %.o): $(addprefix $(SRCDIR), %.c)
 	@$(CC) $(INCFLAGS) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR):
@@ -99,7 +99,7 @@ asan: asanlibs $(ASNDIR) $(ASN)
 asanlibs:
 	@make -j4 -C libft asan
 
-$(addprefix $(ASNDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
+$(addprefix $(ASNDIR), %.o): $(addprefix $(SRCDIR), %.c)
 	$(CC) $(AFLAGS) $(INCFLAGS) -c -o $@ $<
 
 $(ASNDIR):
@@ -125,7 +125,7 @@ debug: debuglibs $(DBGDIR) $(DBG)
 debuglibs:
 	@make -j4 -C libft debug
 
-$(addprefix $(DBGDIR)/, %.o): $(addprefix $(SRCDIR)/, %.c)
+$(addprefix $(DBGDIR), %.o): $(addprefix $(SRCDIR), %.c)
 	$(CC) $(DFLAGS) $(INCFLAGS) -c -o $@ $<
 
 $(DBGDIR):
@@ -137,9 +137,11 @@ dclean:
 	rm -rf $(DBGDIR)
 	rm -rf $(DNAM) $(DNAM).dSYM
 
-.PHONY: tags
 tags:
 	ctags -R .
+
+TAGS:
+	ctags -f TAGS -e -R .
 
 .PHONY: norme
 norme:

@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/29 18:43:57 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/30 18:11:28 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@
 **  For bonuses
 **    tcgetattr()
 **     - termios.h
+**    getpid(), getpwuid()
 */
 
 # define EXPCHR(c) ((c) == '~' || (c) == '$')
@@ -49,6 +50,8 @@
 # define ISDIRSEP(c) ((c) == '/')
 # define PATHSEP(c) (ISDIRSEP(c) || (c) == 0)
 # define FREE(s) if (s) free(s);
+
+# define SHR8(x) (((x) >> 8) & 0xff)
 
 typedef struct s_mainargs	t_margs;
 typedef struct s_env	t_shenv;

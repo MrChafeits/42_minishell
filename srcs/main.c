@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/05/30 01:14:34 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/30 20:53:06 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,6 @@ void		unsetenv_builtin(t_shenv *e)
 }
 
 #define IFNT else if
-#define SHR8(x) (((x) >> 8) & 0xff)
 #define CHKEP(x) (SHR8(x) != 127 && SHR8(x) != 255 && (x) != 11)
 #define ISPWD(s) ((s)[0] == '.' && (s)[1] == '/' && (s)[2])
 #define ISRELP(s) ((s)[0] == '.' && (s)[1] == '.' && (s)[2] == '/' && (s)[3])
@@ -149,7 +148,6 @@ int			msh_exec_path(t_shenv *e)
 			{
 				s = ft_strjoin(e->path[i], "/");
 				s = ft_strjoin_free(s, *e->cmdv, 'L');
-				/* msh_debug_print("exec_path: child s(%s)", s); */
 				if (!access(s, F_OK) && access(s, X_OK) < 0)
 				{
 					ft_dprintf(2, "minishell: %s: Permission denied\n", s);
@@ -167,7 +165,7 @@ int			msh_exec_path(t_shenv *e)
 		ft_dprintf(2, "minishell: %s: Error forking\n", *e->cmdv);
 	else
 		i = wait(&e->ret);
-	FREE(e->home);
+	free(e->home);
 	strvec_dispose(e->path);
 	e->signal_recv = 0;
 	msh_debug_print("exec_path: end ret(%d) i(%d) ex(%d)", e->ret, i, ex);
@@ -244,35 +242,28 @@ int			msh_exec(t_shenv *e)
 
 	st_b = 0;
 	st_d = 0;
-	st_p = 0;
-	msh_debug_print("exec: start cmdv[0](%s)", e->cmdv[0]);
-	st_b = msh_exec_builtin(e);
-	msh_debug_print("exec: builtin st_b(%d)", st_b);
+	st_p = 0; msh_debug_print("exec: start cmdv[0](%s)", e->cmdv[0]);
+	st_b = msh_exec_builtin(e); msh_debug_print("exec: builtin st_b(%d)", st_b);
 	if (WIFEXITED(st_b))
 		return (st_b);
 	if (ISABSP(*e->cmdv) || ISPWD(*e->cmdv) || ISRELP(*e->cmdv))
-	{
-		msh_debug_print("exec: found /");
+	{ msh_debug_print("exec: found /");
 		if (!access(*e->cmdv, F_OK) && access(*e->cmdv, X_OK) < 0)
 		{
 			ft_dprintf(2, "minishell: %s: Permission denied\n", *e->cmdv);
 			return (126);
 		}
-		st_d = msh_exec_pwd(e);
-		msh_debug_print("exec: pwd st_d(%d)", st_d);
+		st_d = msh_exec_pwd(e); msh_debug_print("exec: pwd st_d(%d)", st_d);
 		if (WIFEXITED(st_d))
-		{
-			msh_debug_print("exec: pwd ret st_d(%d)", st_d);
+		{ msh_debug_print("exec: pwd ret st_d(%d)", st_d);
 			if (SHR8(st_d) == 127)
 				ft_dprintf(2, "minishell: %s: Unknown command\n", *e->cmdv);
 			return (st_d);
 		}
 	}
-	st_p = msh_exec_path(e);
-	msh_debug_print("exec: path st_b(%d) st_d(%d) st_p(%d)", st_b, st_d, st_p);
+	st_p = msh_exec_path(e); msh_debug_print("exec: path st_b(%d) st_d(%d) st_p(%d)", st_b, st_d, st_p);
 	if (CHKEP(st_p) && WIFEXITED(st_p))
-	{
-		msh_debug_print("exec: path ret st_p(%d)", st_p);
+	{ msh_debug_print("exec: path ret st_p(%d)", st_p);
 		return (st_p);
 	}
 	else if (st_b == 1 && !st_d && SHR8(st_p) == 255)
@@ -286,34 +277,26 @@ void		msh_print_prompt(void)
 {
 	char	*buf;
 	char	*tmp;
-	int		idx;
+	int		is_home;
 
-	msh_debug_print("print_prompt: start p(%d) sr(%d)", g_shenv->prompt_printed, g_shenv->signal_recv);
-	idx = 0;
+	is_home = 0; msh_debug_print("print_prompt: start p(%d) sr(%d)", g_shenv->prompt_printed, g_shenv->signal_recv);
 	buf = getcwd(0, 0);
-	tmp = get_string_value("HOME");
-	msh_debug_print("print_prompt: tmp(%s) buf(%s)", tmp, buf);
+	tmp = get_string_value("HOME"); msh_debug_print("print_prompt: tmp(%s) buf(%s)", tmp, buf);
 	if (!g_shenv->prompt_printed)
 	{
-		if (tmp != 0 && buf != 0)
+		if (tmp && buf)
 		{
-			if (ft_strequ(buf, tmp))
-				idx = 1;
+			is_home = ft_strequ(buf, tmp);
 			free(tmp);
 		}
-		if (idx)
+		if (is_home)
 			ft_printf("~ msh$ ");
-		else if (idx == 0 && buf)
-		{
-			tmp = ft_strrchr(buf, '/') + 1;
-			ft_printf("%s msh$ ", tmp);
-		}
+		else if (is_home == 0 && buf)
+			ft_printf("%s msh$ ", ft_strrchr(buf, '/') + !ft_strequ(buf, "/"));
 		else
-		{
 			ft_printf("msh$ ");
-		}
 	}
-	FREE(buf);
+	free(buf);
 	g_shenv->prompt_printed = 1;
 	g_shenv->pwd_ex = 0;
 	g_shenv->path_ex = 0;
@@ -322,20 +305,17 @@ void		msh_print_prompt(void)
 char		*msh_readline(void)
 {
 	char	*ln;
-
 	msh_debug_print("readline: start p(%d) sr(%d)", g_shenv->prompt_printed, g_shenv->signal_recv);
 	if (!g_shenv->prompt_printed || !g_shenv->signal_recv)
-	{
 		msh_print_prompt();
-	}
 	g_shenv->signal_recv = 0;
 	if (!get_next_line(0, &ln))
 		exit(g_shenv->ret);
-	msh_debug_print("msh_readline: end");
+	msh_debug_print("msh_readline: end ln(%s)", ln);
 	return (ln);
 }
 
-#define TOKSEP "\t \\"
+#define TOKSEP "\t "
 
 void		msh_panic(char *msg)
 {
@@ -398,43 +378,66 @@ int			msh_varlen(const char *s)
 ** $_ - last word of the previous line of input
 */
 
+char		*strsub_rep(char *str, char *pat, char *rep)
+{
+	char	*r;
+	/* int		ln[4]; */
+	int patlen, replen, newlen, tmplen, sublen=0, beplen = 0;
+
+	msh_debug_print("strsub_rep: start str(%s) pat(%s) rep(%s)", str, pat, rep);
+	patlen = ft_strlen(pat); msh_debug_print("strsub_rep: patlen(%d)", patlen);
+	replen = ft_strlen(rep); msh_debug_print("strsub_rep: replen(%d)", replen);
+	tmplen = ft_strlen(str); msh_debug_print("strsub_rep: tmplen(%d)", tmplen);
+	r = ft_strstr(str, pat); msh_debug_print("strsub_rep: strstr(%s)", r);
+	sublen = ft_strlen(r); msh_debug_print("strsub_rep: sublen(%d)", sublen);
+	if (ft_strnequ(r, pat, patlen))
+	{
+		newlen = ft_strlen(str) - patlen + replen;
+		msh_debug_print("strsub_rep: newlen(%d)", newlen);
+
+		r = ft_strnew(newlen);
+		ft_strncpy(r, str, tmplen - sublen);
+		msh_debug_print("strsub_rep: str1 r(%s)", r);
+
+		ft_strncpy(r + (tmplen - sublen), rep, replen);
+		msh_debug_print("strsub_rep: repl r(%s)", r);
+
+		beplen = ft_strlen(str + tmplen - sublen + patlen);
+		msh_debug_print("strsub_rep: beplen(%d)", beplen);
+
+		msh_debug_print("strsub_rep: str2(%s)", str + tmplen - sublen + patlen);
+		msh_debug_print("strsub_rep: str2 r(%s)", r);
+		ft_strncpy(r + tmplen - sublen + replen, str + tmplen - sublen + patlen, beplen);
+		msh_debug_print("strsub_rep: str2 r(%s)", r);
+
+	}
+	msh_debug_print("strsub_rep: end r(%s)", r);
+	return (r);
+}
+
 char		*msh_dollar(char *ret, char *tmp)
 {
-	t_strlst		*l;
-	register int	i;
+	char			*val;
+	char			*var;
 	char			*r;
-	int				ln[4];
-
+	int				varlen;
 	msh_debug_print("msh_dollar: start ret(%s)tmp(%s)", ret, tmp);
 	if (!tmp || !*tmp || (r = NULL))
 		return (ret);
-	if (ft_strnequ("$?", tmp, 2)) //TODO: add separate function to check specials
-		return (ft_itoa(SHR8(g_shenv->ret)));
-	VL = msh_varlen(tmp);
-	msh_debug_print("msh_dollar: varlen(%d)", VL);
-	l = g_shenv->envlst;
-	i = -1;
-	while (VL && l && ++i < l->list_len)
+	msh_debug_print("msh_dollar: ret(%s)tmp(%s)", ret, tmp);
+	varlen = msh_varlen(tmp);
+	var = ft_strndup(tmp, varlen + (!varlen ? 2 : 1));
+	msh_debug_print("msh_dollar: varlen(%d) var(%s)", varlen, var);
+	val = get_string_value(var + (!varlen ? 0 : 1));
+	if (val)
 	{
-		if (ft_strnequ(l->list[i], tmp + 1, VL))
-		{
-			HL = ft_strlen(ret) - VL + ft_strlen(ft_strchr(l->list[i], '=') + 1);
-			msh_debug_print("msh_dollar: hl(%d)", HL);
-			r = ft_strnew(HL);
-			ft_strncpy(r, ret, (RL = tmp - ret));
-			msh_debug_print("msh_dollar: hl(%d) rl(%d) r(%s)", HL, RL, r);
-			ft_strncpy(r + RL, ft_strchr(l->list[i], '=') + 1,
-					   (CL = ft_strlen(ft_strchr(l->list[i], '=') + 1)));
-			msh_debug_print("msh_dollar: hl(%d) rl(%d) cl(%d) r(%s)", HL, RL, CL, r);
-			ft_strncpy(r + RL + CL, ret + RL + VL + 1,
-					   ft_strlen(ret + RL + VL + 1));
-			msh_debug_print("msh_dollar: hl(%d) rl(%d) cl(%d) r(%s)", HL, RL, CL, r);
-			msh_debug_print("msh_dollar: found r(%s)", r);
-			break ;
-		}
+		r = strsub_rep(ret, var, val);
+		free(val);
 	}
+	else
+		r = ft_strdup(ret);
+	free(var);
 	g_shenv->exp_dollar = 1;
-	r = !r ? ft_strdup(ret) : r;
 	msh_debug_print("msh_dollar: end r(\"%s\")ret(%s)", r, ret);
 	return (r);
 }
@@ -444,9 +447,7 @@ char		*msh_tilde(char *ret, char *tmp)
 	char			*r[2];
 	static char		*home;;
 	struct passwd	*entry;
-	int				ln[4];
 
-	RET_IF(tmp[1] == '~' || tmp[1] == '$', ft_strdup(ret)); //TODO: fix for /~/ and others
 	msh_debug_print("msh_tilde: start ret(%s)tmp(%s)", ret, tmp);
 	r[0] = get_string_value("HOME");
 	if (r[0] == 0)
@@ -460,11 +461,7 @@ char		*msh_tilde(char *ret, char *tmp)
 		r[0] = ft_strdup(home);
 	}
 	msh_debug_print("msh_tilde: ret(%s)tmp(%s)", ret, tmp);
-	HL = ft_strlen(ret) - 1 + ft_strlen(r[0]);
-	r[1] = ft_strnew(HL);
-	ft_strncpy(r[1], ret, (RL = tmp - ret));
-	ft_strncpy(r[1] + RL, r[0], (CL = ft_strlen(r[0]) + 1));
-	ft_strncpy(r[1] + RL + CL, ret + RL + 1, ft_strlen(ret + RL + 1));
+	r[1] = strsub_rep(ret, "~", r[0]);
 	msh_debug_print("msh_tilde: end r[1](\"%s\")ret(%s)", r[1], ret);
 	free(r[0]);
 	return (r[1]);
@@ -485,18 +482,21 @@ char		*msh_expand(char *token)
 	char	*ret;
 	char	*rett;
 
+	//TODO: fix `echo $$' `echo $?' `echo $$' weird behavior
 	msh_debug_print("msh_expand: start token(%s)", token);
 	ret = ft_strdup(token);
 	rett = ret;
 	free(token);
 	if ((tmp = ft_strchr(ret, '~')))
 	{
+		msh_debug_print("msh_expand: found tilde");
 		if (!(rett = msh_tilde(ret, tmp)))
 			msh_panic("Memory allocation error in msh_expand ~");
 		free(g_shenv->home);
 	}
 	else if ((tmp = ft_strchr(ret, '$')))
 	{
+		msh_debug_print("msh_expand: found dollar sign");
 		if (!(rett = msh_dollar(ret, tmp)))
 			msh_panic("Memory allocation error in msh_dollar");
 	}
@@ -701,15 +701,12 @@ int			main(int argc, char **argv, char **envp, char **aplv)
 	g_shenv = &e;
 	if (g_dbg == 3)
 	{
-		register int i;
-		register int l;
-		char *s = "echo \"\thonkorio  \t\t \t   bleb \" dink       fort";
-		char **t;
-		t = quote_strsplit(s, ' ');
-		l = strvec_len(t);
-		for (i = 0; i < l; i++)
-			ft_printf("t[%d](%s)\n", i, t[i]);
-		strvec_dispose(t);
+		char *str, *pat, *rep, *ret;
+		str = ft_strdup("----$PWD----");
+		pat = ft_strdup("$PWD");
+		rep = ft_strdup("/nfs/2018/c/callen");
+		ret = strsub_rep(str, pat, rep);
+		ft_printf("ret(%s)\n", ret);
 	}
 	else
 		ch = msh_repl();
