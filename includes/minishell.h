@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/05/30 18:11:28 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/01 01:08:01 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,8 +130,26 @@ t_shenv	*g_shenv;
 
 int		msh_prompt(void);
 void	msh_print_prompt(void);
+char	*msh_readline(void);
 void	msh_sigint(int s);
 void	msh_panic(char *msg);
+
+char	*strsub_rep(char *str, char *pat, char *rep);
+char	*msh_dollar(char *ret, char *tmp);
+char	*msh_tilde(char *ret, char *tmp);
+char	*msh_expand(char *token);
+
+int		check_token_sub(const char *tok);
+char	**msh_tokenize(char *str);
+void	msh_parse(char **inpt);
+
+int		msh_repl(void);
+
+int		msh_varlen(const char *s);
+int		msh_exec_path(t_shenv *e);
+int		msh_exec_builtin(t_shenv *e);
+int		msh_exec_pwd(t_shenv *e);
+int		msh_exec(t_shenv *e);
 
 void	cd_builtin(t_shenv *e);
 void	echo_builtin(t_shenv *e);

@@ -1,29 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   bc_exit.c                                          :+:      :+:    :+:   */
+/*   bc_env.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/05/30 14:29:30 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 00:32:34 by marvin           ###   ########.fr       */
+/*   Created: 2019/06/01 00:30:43 by callen            #+#    #+#             */
+/*   Updated: 2019/06/01 00:31:42 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 #include "ft_stdio.h"
 
-void		exit_builtin(t_shenv *e)
+void		env_builtin(t_shenv *e)
 {
-	int		st;
+	register int	i;
 
-	msh_debug_print("exit_builtin: start");
-	e->exit_called = 1;
-	if (e->cmdc > 1)
-		st = ft_atoi(e->cmdv[1]);
-	else
-		st = e->ret;
-	msh_debug_print("exit_builtin: st(%d)", st);
-	ft_dprintf(2, "exit\n");
-	exit(st);
+	if (!e || !e->envlst)
+		msh_panic("env_builtin arg *e is NULL, WHAT DID YOU DO?!?");
+	msh_debug_print("env_builtin: start");
+	i = 0;
+	while (i < e->envlst->list_len)
+	{
+		ft_printf("%s\n", e->envlst->list[i]);
+		i++;
+	}
 }

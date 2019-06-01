@@ -6,12 +6,17 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/27 22:00:44 by callen            #+#    #+#             */
-/*   Updated: 2019/05/27 22:38:10 by callen           ###   ########.fr       */
+/*   Updated: 2019/05/31 18:25:46 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 #include "ft_stdio.h"
+
+#ifdef ISWORDSEP
+# undef ISWORDSEP
+#endif
+#define ISWORDSEP(x, c) ((x) == (c) || (x) == ' ' || (x) == '\t')
 
 int			quote_wordcount(char *s, char c)
 {
@@ -26,11 +31,11 @@ int			quote_wordcount(char *s, char c)
 	i = 0;
 	while (s[i])
 	{
-		while (s[i] == c)
+		while (ISWORDSEP(s[i], c))
 			i++;
-		if (s[i] && s[i] != c && count % 2 == 0)
+		if (s[i] && !ISWORDSEP(s[i], c) && count % 2 == 0)
 			total++;
-		while (s[i] != c && s[i])
+		while (!ISWORDSEP(s[i], c) && s[i])
 		{
 			if (s[i] == '\"')
 				count++;
@@ -64,7 +69,7 @@ static int	quote_wordlen(char *s, int c)
 
 	i = 0;
 	l = 0;
-	while (s[i] == c)
+	while (ISWORDSEP(s[i], c))
 		i++;
 	if (s[i] == '\"')
 		while (s[i++] && s[i] != '\"')
@@ -72,7 +77,7 @@ static int	quote_wordlen(char *s, int c)
 			l = !l ? l + 2 : l + 1;
 		}
 	else
-		while (s[i] && s[i] != c)
+		while (s[i] && !ISWORDSEP(s[i], c))
 		{
 			i++;
 			l++;
@@ -105,12 +110,12 @@ char		**quote_strsplit(char *s, int c)
 	k = 0;
 	while (++i < n)
 	{
-		k = quote_wordlen(&s[j], c);
-		if (!(ret[i] = ft_strndup(&s[j + ISQT(s[j])], k - QT(s[j]))))
-			break ;
-		j += quote_wordlen(&s[j], c);
-		while (s[j] == c)
+		while (s[j] == c || s[j] == ' ' || s[j] == '\t')
 			j++;
+		k = quote_wordlen(s + j, c);
+		if (!(ret[i] = ft_strndup(s + j + ISQT(s[j]), k - QT(s[j]))))
+			break ;
+		j += k;
 	}
 	ret[i] = 0;
 	return (ret);
@@ -118,3 +123,4 @@ char		**quote_strsplit(char *s, int c)
 
 #undef ISQT
 #undef QT
+#undef ISWORDSEP

@@ -1,29 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   bc_exit.c                                          :+:      :+:    :+:   */
+/*   signal.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/05/30 14:29:30 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 00:32:34 by marvin           ###   ########.fr       */
+/*   Created: 2019/06/01 00:38:27 by callen            #+#    #+#             */
+/*   Updated: 2019/06/01 00:40:16 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include "ft_stdio.h"
+#include "msh_strvec.h"
+#include "ft_string.h"
 
-void		exit_builtin(t_shenv *e)
+void		msh_sigint(int sig)
 {
-	int		st;
-
-	msh_debug_print("exit_builtin: start");
-	e->exit_called = 1;
-	if (e->cmdc > 1)
-		st = ft_atoi(e->cmdv[1]);
-	else
-		st = e->ret;
-	msh_debug_print("exit_builtin: st(%d)", st);
-	ft_dprintf(2, "exit\n");
-	exit(st);
+	g_shenv->signal_recv = 1;
+	if (sig == SIGINT)
+	{
+		write(1, "\n", 1);
+		g_shenv->prompt_printed = 0;
+		if (!g_shenv->path_ex && !g_shenv->pwd_ex)
+			msh_print_prompt();
+		else
+			g_shenv->path_ex = 0;
+		signal(SIGINT, msh_sigint);
+	}
 }
