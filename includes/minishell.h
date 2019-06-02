@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 01:08:01 by marvin           ###   ########.fr       */
+/*   Updated: 2019/06/01 20:12:39 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ struct	s_env
 	char		**envp;
 	char		**cmdv;
 	char		*sl;
+	char		*temporoni;
 	t_wlst		*list;
 	int			envplen;
 	int			wid;
@@ -146,6 +147,8 @@ void	msh_parse(char **inpt);
 int		msh_repl(void);
 
 int		msh_varlen(const char *s);
+char	*get_string_value(const char *var);
+
 int		msh_exec_path(t_shenv *e);
 int		msh_exec_builtin(t_shenv *e);
 int		msh_exec_pwd(t_shenv *e);
@@ -162,8 +165,10 @@ char	*get_string_value(const char *v);
 char	*get_working_directory(const char *v);
 char	*sh_makepath(const char *p, const char *d, int f);
 char	*get_string_value(const char *var);
+
 char	**quote_strsplit(char *s, int c);
-int		quote_wordcount(char *s, char c);
+int		quote_wordcount(char *s, int c);
+
 void	msh_debug_print(char *fmt, ...);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/01 01:20:10 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 01:20:11 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/01 20:44:28 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,8 @@ int			msh_exec_builtin(t_shenv *e)
 	{
 		if (ft_strequ(g_cmds[i].cmd, *e->cmdv))
 		{
+			for (int j = 0; e->cmdv[j]; j++)
+				msh_debug_print("exec_builtin: cmdv[%d](%s)", j, e->cmdv[j]);
 			g_cmds[i].f(e);
 			status = 0;
 			break ;
@@ -113,8 +115,26 @@ int			msh_exec_pwd(t_shenv *e)
 
 #define CHKEP(x) (SHR8(x) != 127 && SHR8(x) != 255 && (x) != 11)
 #define ISPWD(s) ((s)[0] == '.' && (s)[1] == '/' && (s)[2])
-#define ISRELP(s) ((s)[0] == '.' && (s)[1] == '.' && (s)[2] == '/' && (s)[3])
+#define ISRELPU(s) ((s)[0] == '.' && (s)[1] == '.' && (s)[2] == '/' && (s)[3])
+#define ISRELPD(s) ((s)[0] != '/' && (ft_strrchr((s), '/')) != 0)
+#define ISRELP(s) (ISRELPU(s) || ISRELPD(s))
 #define ISABSP(s) ((s)[0] == '/' && (s)[1])
+
+int			msh_exec_pwd_check(t_shenv *e)
+{
+	int		ret;
+
+	ret = 0;
+	if (!access(*e->cmdv, F_OK) && access(*e->cmdv, X_OK) < 0)
+	{
+		ft_dprintf(2, "minishell: %s: Permission denied\n", *e->cmdv);
+		return (126);
+	}
+	ret = msh_exec_pwd(e);
+	if (WIFEXITED(ret) && SHR8(ret) == 127)
+		ft_dprintf(2, "minishell: %s: Unknown command\n", *e->cmdv);
+	return (ret);
+}
 
 int			msh_exec(t_shenv *e)
 {
@@ -122,42 +142,48 @@ int			msh_exec(t_shenv *e)
 	int	st_d;
 	int	st_p;
 
-	st_b = 0;
-	st_d = 0;
-	st_p = 0;
 	msh_debug_print("exec: start cmdv[0](%s)", e->cmdv[0]);
+	st_d = 0;
 	st_b = msh_exec_builtin(e);
-	msh_debug_print("exec: builtin st_b(%d)", st_b);
 	if (WIFEXITED(st_b))
+	{
+		msh_debug_print("exec: ret builtin st_b(%d)", st_b);
 		return (st_b);
+	}
 	if (ISABSP(*e->cmdv) || ISPWD(*e->cmdv) || ISRELP(*e->cmdv))
 	{
-		msh_debug_print("exec: found /");
-		if (!access(*e->cmdv, F_OK) && access(*e->cmdv, X_OK) < 0)
-		{
-			ft_dprintf(2, "minishell: %s: Permission denied\n", *e->cmdv);
-			return (126);
-		}
-		st_d = msh_exec_pwd(e);
-		msh_debug_print("exec: pwd st_d(%d)", st_d);
+		st_d = msh_exec_pwd_check(e);
 		if (WIFEXITED(st_d))
 		{
-			msh_debug_print("exec: pwd ret st_d(%d)", st_d);
-			if (SHR8(st_d) == 127)
-				ft_dprintf(2, "minishell: %s: Unknown command\n", *e->cmdv);
+			msh_debug_print("exec: ret pwd st_d(%d)", st_d);
 			return (st_d);
 		}
 	}
 	st_p = msh_exec_path(e);
-	msh_debug_print("exec: path st_b(%d) st_d(%d) st_p(%d)", st_b, st_d, st_p);
 	if (CHKEP(st_p) && WIFEXITED(st_p))
 	{
-		msh_debug_print("exec: path ret st_p(%d)", st_p);
+		msh_debug_print("exec: ret path st_p(%d)", st_p);
 		return (st_p);
 	}
 	else if (st_b == 1 && !st_d && SHR8(st_p) == 255)
 		ft_dprintf(2, "minishell: %s: Unknown command\n", *e->cmdv);
 	else
 		e->signal_recv = 0;
+	msh_debug_print("exec: ret err st_p(%d)", st_p);
 	return (127);
 }
+
+#undef CHKEP
+#undef ISPWD
+#undef ISRELP
+#undef ISABSP
+
+/*
+** msh_debug_print("exec: start cmdv[0](%s)", e->cmdv[0]);
+** msh_debug_print("exec: builtin st_b(%d)", st_b);
+** msh_debug_print("exec: found /");
+** msh_debug_print("exec: pwd st_d(%d)", st_d);
+** msh_debug_print("exec: pwd ret st_d(%d)", st_d);
+** msh_debug_print("exec: path st_b(%d) st_d(%d) st_p(%d)", st_b, st_d, st_p);
+** msh_debug_print("exec: path ret st_p(%d)", st_p);
+*/

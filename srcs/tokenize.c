@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   tokenize.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/06/01 12:06:31 by callen            #+#    #+#             */
+/*   Updated: 2019/06/01 20:49:52 by callen           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /* TODO: Need better way of checking for presence of '~' or '$' */
@@ -58,6 +70,7 @@ void		msh_parse(char **inpt)
 			g_shenv->cmdv = tkns;
 			g_shenv->cmdc = strvec_len(tkns);
 			g_shenv->ret = msh_exec(g_shenv);
+			/* msh_debug_print("msh_parse: cmdc(%d)", g_shenv->cmdc); */
 			strvec_dispose(tkns);
 		}
 		else
@@ -83,7 +96,7 @@ int			msh_repl(void)
 			continue ;
 		}
 		dink = ft_strtrim(ln);
-		boy = ft_strsplit(dink, ';');
+		boy = ft_strsplit(dink, ';'); // XXX: quote_strsplit instead?
 		msh_parse(boy);
 		free(ln);
 		free(dink);

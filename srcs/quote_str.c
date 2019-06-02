@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/27 22:00:44 by callen            #+#    #+#             */
-/*   Updated: 2019/05/31 18:25:46 by marvin           ###   ########.fr       */
+/*   Updated: 2019/06/01 17:46:32 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #endif
 #define ISWORDSEP(x, c) ((x) == (c) || (x) == ' ' || (x) == '\t')
 
-int			quote_wordcount(char *s, char c)
+int			quote_wordcount(char *s, int c)
 {
 	register int	total;
 	register int	count;
@@ -103,6 +103,7 @@ char		**quote_strsplit(char *s, int c)
 	char			**ret;
 
 	n = quote_wordcount(s, c);
+	msh_debug_print("quote_strsplit: wordcount(%d)", n);
 	if (!s || !n || !check_quotes(s) || !(ret = malloc((n + 1) * sizeof(*ret))))
 		return (0);
 	i = -1;
@@ -110,9 +111,10 @@ char		**quote_strsplit(char *s, int c)
 	k = 0;
 	while (++i < n)
 	{
-		while (s[j] == c || s[j] == ' ' || s[j] == '\t')
+		while (ISWORDSEP(s[j], c))
 			j++;
 		k = quote_wordlen(s + j, c);
+		msh_debug_print("quote_strsplit: i(%d) wordlen(%d)", i, k);
 		if (!(ret[i] = ft_strndup(s + j + ISQT(s[j]), k - QT(s[j]))))
 			break ;
 		j += k;

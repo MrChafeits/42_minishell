@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/01 00:30:43 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 00:31:42 by marvin           ###   ########.fr       */
+/*   Updated: 2019/06/01 13:08:53 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ void		env_builtin(t_shenv *e)
 
 	if (!e || !e->envlst)
 		msh_panic("env_builtin arg *e is NULL, WHAT DID YOU DO?!?");
-	msh_debug_print("env_builtin: start");
 	i = 0;
 	while (i < e->envlst->list_len)
 	{
@@ -27,3 +26,8 @@ void		env_builtin(t_shenv *e)
 		i++;
 	}
 }
+
+/*
+**
+** msh_debug_print("env_builtin: start");
+*/

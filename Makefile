@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/06/01 01:19:09 by callen           ###   ########.fr        #
+#    Updated: 2019/06/01 13:46:00 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -47,6 +47,7 @@ prompt.c \
 signal.c \
 tokenize.c \
 varlen.c \
+variables.c \
 ft_strvec.c \
 quote_str.c
 

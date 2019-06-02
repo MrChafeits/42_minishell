@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 01:14:13 by marvin           ###   ########.fr       */
+/*   Updated: 2019/06/01 18:19:40 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,9 @@ int			round_to_pow2(int n)
 	return (i);
 }
 
+#define INCSHLVL(v) (ft_strjoin_free("SHLVL=", ft_itoa(ft_atoi((v)+6)+1), 'R'))
+#define COPYVAR(v) (ft_strnequ(v,"SHLVL=", 6) ? INCSHLVL(v) : ft_strdup(v))
+
 static void	init_shenv(t_shenv *shenv, t_margs *mg)
 {
 	register int	i;
@@ -74,7 +77,7 @@ static void	init_shenv(t_shenv *shenv, t_margs *mg)
 	i = -1;
 	while (mg->e[++i] && i < shenv->envlst->list_size)
 	{
-		shenv->envlst->list[i] = ft_strdup(mg->e[i]);
+		shenv->envlst->list[i] = COPYVAR(mg->e[i]);
 		shenv->envlst->list_len++;
 	}
 	shenv->cmdv = NULL;
@@ -91,6 +94,9 @@ static void	init_shenv(t_shenv *shenv, t_margs *mg)
 	shenv->prompt_printed = 0;
 	shenv->signal_recv = 0;
 }
+
+#undef COPYVAR
+#undef INCSHLVL
 
 /*
 ** TODO: Consider parsing command line input into a word_list rather than an
@@ -119,7 +125,25 @@ int			main(int argc, char **argv, char **envp, char **aplv)
 	m.a = aplv;
 	init_shenv(&e, &m);
 	g_shenv = &e;
-	ch = msh_repl();
+	if (g_dbg == 3)
+	{
+		int i;
+		char *str = ft_strdup("echo \"h ; echo a\" ; ls -lA");
+		char **array1 = quote_strsplit(str, ';');
+		for (i = 0; array1[i]; i++)
+			ft_printf("array1[%d] = \'%s\'\n", i, array1[i]);
+
+		/* char *str, *tok; */
+		/* char *tmp; */
+		/* str = tmp = ft_strdup("echo \"h ; echo a\" ; ls -lA"); */
+		/* for (i = 0; (tok = strsep(&str, "\"")) != NULL; i++) { */
+		/* 	ft_printf("i(%d) tok(%s)\n", i, tok); */
+		/* } */
+		/* free(tmp); */
+		ch = 0;
+	}
+	else
+		ch = msh_repl();
 	msh_debug_print("main: end ch(%d)", ch);
 	return (ch);
 }
