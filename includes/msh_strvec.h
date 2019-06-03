@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/27 23:20:35 by callen            #+#    #+#             */
-/*   Updated: 2019/05/28 14:26:13 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 01:20:07 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,9 @@
 # include "ft_string.h"
 # include "ft_stdlib.h"
 
+# define REVLIST(l,t) ((l && l->next) ? (t)list_reverse((t_glist*)l) : (t)(l))
 # define STRSAV(x) ft_strcpy(malloc(1 + ft_strlen(x)), (x))
-# define REVLIST(l,t) ((l&&l->next) ? (t)list_reverse((t_glist*)l):(t)(l))
+# define STRDUP(x) ((x) ? ft_strcpy(malloc(1+ft_strlen(x)), (x)) : (char*)NULL)
 
 t_wdtk		*make_bare_word(const char *s);
 t_wlst		*make_word_list(t_wdtk *x, t_wlst *l);

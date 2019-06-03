@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/01 01:20:03 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 01:20:04 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 00:28:29 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,13 +71,14 @@ char		*msh_dollar(char *ret, char *tmp)
 	char			*var;
 	char			*r;
 	int				varlen;
-	msh_debug_print("msh_dollar: start ret(%s)tmp(%s)", ret, tmp);
+
+	msh_debug_print("msh_dollar: start ret(\"%s\") tmp(\"%s\")", ret, tmp);
 	if (!tmp || !*tmp || (r = NULL))
 		return (ret);
-	msh_debug_print("msh_dollar: ret(%s)tmp(%s)", ret, tmp);
+	msh_debug_print("msh_dollar: ret(\"%s\") tmp(\"%s\")", ret, tmp);
 	varlen = msh_varlen(tmp);
 	var = ft_strndup(tmp, varlen + (!varlen ? 2 : 1));
-	msh_debug_print("msh_dollar: varlen(%d) var(%s)", varlen, var);
+	msh_debug_print("msh_dollar: varlen(%d) var(\"%s\")", varlen, var);
 	val = get_string_value(var + (!varlen ? 0 : 1));
 	if (val)
 	{
@@ -88,17 +89,17 @@ char		*msh_dollar(char *ret, char *tmp)
 		r = ft_strdup(ret);
 	free(var);
 	g_shenv->exp_dollar = 1;
-	msh_debug_print("msh_dollar: end r(\"%s\")ret(%s)", r, ret);
+	msh_debug_print("msh_dollar: end r(\"%s\") ret(\"%s\")", r, ret);
 	return (r);
 }
 
 char		*msh_tilde(char *ret, char *tmp)
 {
 	char			*r[2];
-	static char		*home;;
+	static char		*home;
 	struct passwd	*entry;
 
-	msh_debug_print("msh_tilde: start ret(%s)tmp(%s)", ret, tmp);
+	msh_debug_print("msh_tilde: start ret(\"%s\") tmp(\"%s\")", ret, tmp);
 	if (ft_strnequ(tmp, "~~", 2))
 		return (ft_strdup(ret));
 	r[0] = get_string_value("HOME");
@@ -112,9 +113,9 @@ char		*msh_tilde(char *ret, char *tmp)
 		}
 		r[0] = ft_strdup(home);
 	}
-	msh_debug_print("msh_tilde: ret(%s)tmp(%s)", ret, tmp);
+	msh_debug_print("msh_tilde: ret(\"%s\") tmp(\"%s\")", ret, tmp);
 	r[1] = strsub_rep(ret, "~", r[0]);
-	msh_debug_print("msh_tilde: end r[1](\"%s\")ret(%s)", r[1], ret);
+	msh_debug_print("msh_tilde: end r[1](\"%s\") ret(\"%s\")", r[1], ret);
 	free(r[0]);
 	return (r[1]);
 }
@@ -129,8 +130,7 @@ char		*msh_expand(char *token)
 	char	*ret;
 	char	*rett;
 
-	//TODO: fix `echo $$' `echo $?' `echo $$' weird behavior
-	msh_debug_print("msh_expand: start token(%s)", token);
+	msh_debug_print("msh_expand: start token(\"%s\")", token);
 	ret = ft_strdup(token);
 	rett = ret;
 	free(token);
@@ -147,9 +147,8 @@ char		*msh_expand(char *token)
 		if (!(rett = msh_dollar(ret, tmp)))
 			msh_panic("Memory allocation error in msh_dollar");
 	}
-	if (ft_strequ(ret, rett))
-		g_shenv->expand_var = 0;
+	(ft_strequ(ret, rett)) ? g_shenv->expand_var = 0 : 0;
 	free(ret);
-	msh_debug_print("msh_expand: end rett(%s)", rett);
+	msh_debug_print("msh_expand: end rett(\"%s\")", rett);
 	return (rett);
 }

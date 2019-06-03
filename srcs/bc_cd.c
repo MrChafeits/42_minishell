@@ -6,12 +6,11 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/27 23:05:21 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 23:52:37 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 02:09:24 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include "msh_variables.h"
 #include "ft_stdio.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -26,18 +25,21 @@ int			folderoni(char *path)
 	int		r;
 	char	*cur;
 
+	msh_debug_print("folderoni: start path(%s)", path);
 	cur = getcwd(0, 0);
 	r = 0;
-	if (!path)
-		path = g_shenv->home;
 	if ((r = access(path, F_OK)) == -1)
 		ft_dprintf(2, "minishell: cd: %s: No such file or directory\n", path);
 	else if ((r = access(path, R_OK)) == -1)
 		ft_dprintf(2, "minishell: cd: %s: Permission denied\n", path);
 	else
+	{
+		g_shenv->sl = ft_strdup(cur);
 		chdir(path);
-	g_shenv->sl = ft_strdup(cur);
+	}
+	g_shenv->ret = (r == -1 ? 256 : 0);
 	free(cur);
+	msh_debug_print("folderoni: end r(%d)", r);
 	return (r);
 }
 
@@ -55,47 +57,58 @@ void		bind_var_value(char *name, char *value, int alloc)
 	msh_debug_print("bind_var_value: end");
 }
 
+static char	*special_args(t_shenv *e)
+{
+	char	*dir;
+
+	msh_debug_print("special_args: start e->ret(%d)", e->ret);
+	dir = NULL;
+	if (e->cmdc == 1)
+	{
+		if (!(dir = get_string_value("HOME")))
+			ft_dprintf(2, "minishell: cd: HOME not set\n");
+	}
+	if (e->cmdc == 2 && ft_strequ("-", e->cmdv[1]))
+	{
+		if (!(dir = get_string_value("OLDPWD")))
+			ft_dprintf(2, "minishell: cd: OLDPWD not set\n");
+	}
+	else if (e->cmdc >= 2)
+		dir = ft_strdup(e->cmdv[1]);
+	e->ret = (dir == 0 ? 256 : 0);
+	msh_debug_print("special_args: end e->ret(%d)", e->ret);
+	return (dir);
+}
+
 void		cd_builtin(t_shenv *e)
 {
 	char	*dirname;
 	int		old;
 
-	/* msh_debug_print("cd_builtin: start ac(%d) *av(%s)", e->cmdc, *e->cmdv); */
-	if (e->cmdc == 1 && !(dirname = get_string_value("HOME")))
-			ft_dprintf(2, "minishell: cd: HOME not set\n");
-	if (e->cmdc == 2 && ft_strequ("-", e->cmdv[1]))
-	{
-		dirname = get_string_value("OLDPWD");
-		ft_printf("%s\n", dirname);
-	}
-	else if (e->cmdc >= 2)
-		dirname = ft_strdup(e->cmdv[1]);
-	/* msh_debug_print("cd_builtin: dirname(%s)", dirname); */
+	msh_debug_print("cd_builtin: start e->ret(%d)", e->ret);
+	old = 1;
+	dirname = special_args(e);
 	dirname ? old = folderoni(dirname) : 0;
 	if (dirname && !old)
 	{
-		/* msh_debug_print("cd_builtin: oldpwd dirname(%s) tmp(%s)", dirname, e->temporoni); */
+		msh_debug_print("cd_builtin: oldpwd dirname(%s)", dirname);
 		bind_var_value("OLDPWD", e->sl, 2);
 		if (!ft_strstr(dirname, "..") && *dirname == '/')
-		/* { */
-		/* 	msh_debug_print("cd_builtin: pwdd dirname(%s) tmp(%s)", dirname, e->temporoni); */
 			bind_var_value("PWD", dirname, 2);
-		/* } */
 		else
 		{
-			/* e->temporoni = getcwd(0, 0); */
-			/* msh_debug_print("cd_builtin: pwdt dirname(%s) tmp(%s)", dirname, e->temporoni); */
+			msh_debug_print("cd_builtin: pwdt dirname(%s)", dirname);
 			bind_var_value("PWD", getcwd(0, 0), 2);
 			free(dirname);
 		}
+		e->ret = 0;
 	}
 	else
 		free(dirname);
-	msh_debug_print("cd_builtin: end");
+	msh_debug_print("cd_builtin: end e->ret(%d)", e->ret);
 }
 
 /*
-**
 **void		pwd_builtin(t_shenv *e)
 **{
 **	msh_debug_print("pwd_builtin: start(%s)", *e->cmdv);

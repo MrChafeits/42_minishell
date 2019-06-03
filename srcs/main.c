@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 18:19:40 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 00:27:49 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,20 +22,6 @@
 ** - `cd' incorrectly updating $PWD if passed a relative path
 ** -
 */
-
-void		msh_debug_print(char *fmt, ...)
-{
-	va_list	ap;
-
-	if (g_dbg)
-	{
-		va_start(ap, fmt);
-		write(2, "[DBG: ", 6);
-		ft_vdprintf(2, fmt, ap);
-		write(2, "]\n",  2);
-		va_end(ap);
-	}
-}
 
 #define IFNT else if
 
@@ -99,8 +85,8 @@ static void	init_shenv(t_shenv *shenv, t_margs *mg)
 #undef INCSHLVL
 
 /*
-** TODO: Consider parsing command line input into a word_list rather than an
-** array of strings
+** TODO for 21sh
+** - parse command line input int a word list (t_wlst)
 */
 
 int			main(int argc, char **argv, char **envp, char **aplv)
@@ -125,25 +111,7 @@ int			main(int argc, char **argv, char **envp, char **aplv)
 	m.a = aplv;
 	init_shenv(&e, &m);
 	g_shenv = &e;
-	if (g_dbg == 3)
-	{
-		int i;
-		char *str = ft_strdup("echo \"h ; echo a\" ; ls -lA");
-		char **array1 = quote_strsplit(str, ';');
-		for (i = 0; array1[i]; i++)
-			ft_printf("array1[%d] = \'%s\'\n", i, array1[i]);
-
-		/* char *str, *tok; */
-		/* char *tmp; */
-		/* str = tmp = ft_strdup("echo \"h ; echo a\" ; ls -lA"); */
-		/* for (i = 0; (tok = strsep(&str, "\"")) != NULL; i++) { */
-		/* 	ft_printf("i(%d) tok(%s)\n", i, tok); */
-		/* } */
-		/* free(tmp); */
-		ch = 0;
-	}
-	else
-		ch = msh_repl();
+	ch = msh_repl();
 	msh_debug_print("main: end ch(%d)", ch);
 	return (ch);
 }

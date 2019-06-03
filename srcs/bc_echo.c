@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/22 16:48:43 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 14:01:09 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/02 20:20:24 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,9 @@ int			echo_builtin_cmd(int argc, char **argv)
 
 void		echo_builtin(t_shenv *e)
 {
-	int		t;
-
 	if (!e)
 		return ;
-	t = echo_builtin_cmd(e->cmdc, e->cmdv);
-	e->ret = !e->ret ? t : e->ret;
+	e->ret = echo_builtin_cmd(e->cmdc, e->cmdv);
 }
 
 /*

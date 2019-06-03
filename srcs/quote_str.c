@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/27 22:00:44 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 17:46:32 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 00:02:00 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,6 @@ char		**quote_strsplit(char *s, int c)
 		while (ISWORDSEP(s[j], c))
 			j++;
 		k = quote_wordlen(s + j, c);
-		msh_debug_print("quote_strsplit: i(%d) wordlen(%d)", i, k);
 		if (!(ret[i] = ft_strndup(s + j + ISQT(s[j]), k - QT(s[j]))))
 			break ;
 		j += k;

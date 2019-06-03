@@ -6,19 +6,17 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/01 12:06:31 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 20:49:52 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 00:24:44 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-/* TODO: Need better way of checking for presence of '~' or '$' */
-
 int			check_token_sub(const char *tok)
 {
 	const char	*p = tok;
 
-	msh_debug_print("check_token_sub: start tok(%s)", tok);
+	msh_debug_print("check_token_sub: start tok(\"%s\")", tok);
 	if (!p || *p == 0)
 		return (0);
 	while (*p)
@@ -26,7 +24,7 @@ int			check_token_sub(const char *tok)
 		if (*p == '~')
 		{
 			if (*(p + 1) && *(p + 1) == '~')
-				break;
+				break ;
 			return (1);
 		}
 		if (*p == '$' && *(p + 1))
@@ -35,7 +33,7 @@ int			check_token_sub(const char *tok)
 		}
 		p++;
 	}
-	msh_debug_print("check_token_sub: end ret0 tok(%s)", tok);
+	msh_debug_print("check_token_sub: end ret0 tok(\"%s\")", tok);
 	return (0);
 }
 
@@ -61,6 +59,8 @@ void		msh_parse(char **inpt)
 	char			**tkns;
 	register int	i;
 
+	msh_debug_print("parse: start e->ret(%d)(%d, %d)",
+			g_shenv->ret, SHR8(g_shenv->ret), g_shenv->ret & 0xff);
 	i = -1;
 	while (inpt && inpt[++i])
 	{
@@ -70,7 +70,8 @@ void		msh_parse(char **inpt)
 			g_shenv->cmdv = tkns;
 			g_shenv->cmdc = strvec_len(tkns);
 			g_shenv->ret = msh_exec(g_shenv);
-			/* msh_debug_print("msh_parse: cmdc(%d)", g_shenv->cmdc); */
+			msh_debug_print("parse: exec e->ret(%d)(%d, %d)",
+					g_shenv->ret, SHR8(g_shenv->ret), g_shenv->ret & 0xff);
 			strvec_dispose(tkns);
 		}
 		else
@@ -78,6 +79,10 @@ void		msh_parse(char **inpt)
 	}
 	strvec_dispose(inpt);
 }
+
+/*
+** XXX: quote_strsplit instead to avoid ``echo "s ; echo st"'' undesired output
+*/
 
 int			msh_repl(void)
 {
@@ -96,7 +101,7 @@ int			msh_repl(void)
 			continue ;
 		}
 		dink = ft_strtrim(ln);
-		boy = ft_strsplit(dink, ';'); // XXX: quote_strsplit instead?
+		boy = ft_strsplit(dink, ';');
 		msh_parse(boy);
 		free(ln);
 		free(dink);

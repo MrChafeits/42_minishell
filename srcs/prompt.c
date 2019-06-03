@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/01 01:19:51 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 01:19:52 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/02 20:18:46 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ void		msh_print_prompt(void)
 char		*msh_readline(void)
 {
 	char	*ln;
+
 	if (!g_shenv->prompt_printed || !g_shenv->signal_recv)
 		msh_print_prompt();
 	g_shenv->signal_recv = 0;

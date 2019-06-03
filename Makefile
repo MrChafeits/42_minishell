@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/06/01 13:46:00 by callen           ###   ########.fr        #
+#    Updated: 2019/06/03 00:53:06 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,22 +34,31 @@ ASANLIBS := $(LIBDIR)a_libft.a
 FRAMWRKS :=
 
 SRC := \
-main.c \
 bc_cd.c \
 bc_echo.c \
 bc_env.c \
 bc_exit.c \
 bc_setenv.c \
 bc_unsetenv.c \
+debug_print.c \
 exec_command.c \
+exec_path.c \
 expansion.c \
+generic_list.c \
+main.c \
 prompt.c \
+quote_str.c \
 signal.c \
+strlist_one.c \
+strlist_three.c \
+strlist_two.c \
+strvec_conv.c \
+strvec_one.c \
+strvec_two.c \
 tokenize.c \
-varlen.c \
 variables.c \
-ft_strvec.c \
-quote_str.c
+varlen.c \
+word_list_init.c
 
 OBJ := $(addprefix $(OBJDIR), $(SRC:.c=.o))
 DBG := $(addprefix $(DBGDIR), $(SRC:.c=.o))

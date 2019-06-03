@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/01 12:21:51 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 12:30:00 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 00:20:56 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,17 @@ static char	*check_special_var(const char *var)
 {
 	char	*r;
 
+	msh_debug_print("check_special_var: start e->ret(%d, %d)",
+			SHR8(g_shenv->ret), g_shenv->ret & 0xff);
 	r = NULL;
 	if (ft_strnequ(var, "$$", 2))
+	{
 		r = ft_itoa(getpid());
+	}
 	else if (ft_strnequ(var, "$?", 2))
 		r = ft_itoa(SHR8(g_shenv->ret));
-	msh_debug_print("check_special_var: r(%s)", r);
+	msh_debug_print("check_special_var: end r(%s) e->ret(%d, %d)", r,
+			SHR8(g_shenv->ret), g_shenv->ret & 0xff);
 	return (r);
 }
 
@@ -41,7 +46,7 @@ static char	*search_env_var(const char *var)
 	{
 		tmp = g_shenv->envlst->list[i];
 		if ((void*)tmp == NULL)
-			break;
+			break ;
 		if (ft_strnequ(g_shenv->envlst->list[i], var, vl))
 		{
 			tmp = ft_strchr(g_shenv->envlst->list[i], '=') + 1;

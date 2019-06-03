@@ -1,28 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   signal.c                                           :+:      :+:    :+:   */
+/*   word_list_init.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/06/01 00:38:27 by callen            #+#    #+#             */
-/*   Updated: 2019/06/03 00:00:47 by callen           ###   ########.fr       */
+/*   Created: 2019/06/03 00:30:31 by callen            #+#    #+#             */
+/*   Updated: 2019/06/03 00:31:28 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "msh_strvec.h"
 
-void		msh_sigint(int sig)
+/*
+** array.c 2 functions
+*/
+
+t_wdtk		*make_bare_word(const char *s)
 {
-	g_shenv->signal_recv = 1;
-	if (sig == SIGINT)
-	{
-		write(1, "\n", 1);
-		g_shenv->prompt_printed = 0;
-		if (!g_shenv->path_ex && !g_shenv->pwd_ex)
-			msh_print_prompt();
-		else
-			g_shenv->path_ex = 0;
-		signal(SIGINT, msh_sigint);
-	}
+	t_wdtk *w;
+
+	w = malloc(sizeof(*w));
+	w->word = s ? STRSAV(s) : STRSAV("");
+	w->flags = 0;
+	return (w);
+}
+
+t_wlst		*make_word_list(t_wdtk *x, t_wlst *l)
+{
+	t_wlst *w;
+
+	w = malloc(sizeof(*w));
+	w->word = x;
+	w->next = l;
+	return (w);
 }
