@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/01 01:19:51 by callen            #+#    #+#             */
-/*   Updated: 2019/06/02 20:18:46 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 17:24:27 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,11 +46,16 @@ char		*msh_readline(void)
 {
 	char	*ln;
 
+	msh_debug_print("msh_readline: start");
 	if (!g_shenv->prompt_printed || !g_shenv->signal_recv)
-		msh_print_prompt();
+		if (g_shenv->tty_input && g_shenv->tty_output)
+			msh_print_prompt();
 	g_shenv->signal_recv = 0;
-	if (get_next_line(0, &ln) != 1)
-		exit(g_shenv->ret);
+	if (get_next_line(STDIN_FILENO, &ln) != 1)
+	{
+		g_shenv->exit_called = -1;
+		exit_builtin(g_shenv);
+	}
 	if (ln && *ln == 0)
 		g_shenv->prompt_printed = 0;
 	return (ln);

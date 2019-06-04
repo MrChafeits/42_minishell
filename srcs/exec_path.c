@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/02 14:59:43 by callen            #+#    #+#             */
-/*   Updated: 2019/06/02 20:00:42 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 18:54:15 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,8 @@ int			msh_exec_path(t_shenv *e)
 	else
 		e->wid = wait(&e->ret);
 	strvec_dispose(e->path);
+	if (e->signal_recv)
+		e->ret += 128;
 	e->signal_recv = 0;
 	return (e->ret);
 }

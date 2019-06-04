@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/01 12:06:31 by callen            #+#    #+#             */
-/*   Updated: 2019/06/03 00:24:44 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 17:32:56 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,8 +69,10 @@ void		msh_parse(char **inpt)
 		{
 			g_shenv->cmdv = tkns;
 			g_shenv->cmdc = strvec_len(tkns);
+			msh_debug_print("parse: exec start e->ret(%d)(%d, %d)",
+					g_shenv->ret, SHR8(g_shenv->ret), g_shenv->ret & 0xff);
 			g_shenv->ret = msh_exec(g_shenv);
-			msh_debug_print("parse: exec e->ret(%d)(%d, %d)",
+			msh_debug_print("parse: exec end e->ret(%d)(%d, %d)",
 					g_shenv->ret, SHR8(g_shenv->ret), g_shenv->ret & 0xff);
 			strvec_dispose(tkns);
 		}

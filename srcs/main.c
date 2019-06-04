@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 14:56:58 by callen            #+#    #+#             */
-/*   Updated: 2019/06/03 00:27:49 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 17:34:14 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,70 +19,24 @@
 
 /*
 ** TODO: Things to fix
-** - `cd' incorrectly updating $PWD if passed a relative path
-** -
+** - isatty(STDOUT_FILENO) to prevent prompt output
 */
 
 #define IFNT else if
 
 void		msh_panic(char *msg)
 {
-	ft_dprintf(2, "minishell: %s\n", msg);
+	ft_dprintf(2, "minishell: PANIC: %s\n", msg);
 	exit(1);
 }
 
-void		msh_usage(int ex, char *v)
+static void	msh_usage(int ex, char *v)
 {
 	ft_dprintf(2, "Usage: %s [option] ...\n", v);
 	ft_dprintf(2, "\t-d : increase debug output\n");
 	ft_dprintf(2, "\t-h : display this help output\n");
 	exit(ex);
 }
-
-int			round_to_pow2(int n)
-{
-	register int	i;
-
-	i = 1;
-	while (i <= n)
-		i <<= 1;
-	return (i);
-}
-
-#define INCSHLVL(v) (ft_strjoin_free("SHLVL=", ft_itoa(ft_atoi((v)+6)+1), 'R'))
-#define COPYVAR(v) (ft_strnequ(v,"SHLVL=", 6) ? INCSHLVL(v) : ft_strdup(v))
-
-static void	init_shenv(t_shenv *shenv, t_margs *mg)
-{
-	register int	i;
-	int				l;
-
-	shenv->m = mg;
-	l = round_to_pow2(strvec_len(mg->e));
-	shenv->envlst = strlist_new(l);
-	i = -1;
-	while (mg->e[++i] && i < shenv->envlst->list_size)
-	{
-		shenv->envlst->list[i] = COPYVAR(mg->e[i]);
-		shenv->envlst->list_len++;
-	}
-	shenv->cmdv = NULL;
-	shenv->sl = NULL;
-	shenv->wid = 0;
-	shenv->pwd_ex = 0;
-	shenv->st = 0;
-	shenv->dl = 0;
-	shenv->cmdc = 0;
-	shenv->ret = 0;
-	shenv->home = NULL;
-	shenv->path = NULL;
-	shenv->exit_called = 0;
-	shenv->prompt_printed = 0;
-	shenv->signal_recv = 0;
-}
-
-#undef COPYVAR
-#undef INCSHLVL
 
 /*
 ** TODO for 21sh

@@ -6,7 +6,7 @@
 #    By: callen <callen@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/09/23 22:04:17 by callen            #+#    #+#              #
-#    Updated: 2019/06/03 00:53:06 by callen           ###   ########.fr        #
+#    Updated: 2019/06/03 15:59:31 by callen           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,6 +45,7 @@ exec_command.c \
 exec_path.c \
 expansion.c \
 generic_list.c \
+init_shell.c \
 main.c \
 prompt.c \
 quote_str.c \

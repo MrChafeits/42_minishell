@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/27 23:05:21 by callen            #+#    #+#             */
-/*   Updated: 2019/06/03 02:09:24 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 17:32:52 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,10 +107,3 @@ void		cd_builtin(t_shenv *e)
 		free(dirname);
 	msh_debug_print("cd_builtin: end e->ret(%d)", e->ret);
 }
-
-/*
-**void		pwd_builtin(t_shenv *e)
-**{
-**	msh_debug_print("pwd_builtin: start(%s)", *e->cmdv);
-**}
-*/

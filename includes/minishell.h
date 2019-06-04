@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/12 15:08:30 by callen            #+#    #+#             */
-/*   Updated: 2019/06/01 20:12:39 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 17:46:06 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@
 **    tcgetattr()
 **     - termios.h
 **    getpid(), getpwuid()
+**    ...
 */
 
 # define EXPCHR(c) ((c) == '~' || (c) == '$')
@@ -74,20 +75,16 @@ struct	s_env
 	char		**envp;
 	char		**cmdv;
 	char		*sl;
-	char		*temporoni;
-	t_wlst		*list;
-	int			envplen;
 	int			wid;
 	int			pwd_ex;
 	int			path_ex;
 	int			st;
-	int			dl;
 	int			cmdc;
 	int			ret;
+	int			tty_output;
+	int			tty_input;
 	int			exp_dollar;
-	int			exp_tilde;
 	int			expand_var;
-	int			is_echo;
 	int			prompt_printed;
 	int			signal_recv;
 	int			exit_called;
@@ -120,12 +117,11 @@ struct	s_bc
 **  - Management of signals, specifically Ctrl-C. Global variables are allowed
 **    for this bonus
 **  - Management of execution rights in PATH
-**  - Auto completion
+**  - Auto completion (how tho)
 **  - Separating commands with ";"
 **  - Others that I think will be useful
 */
 
-int		g_errno;
 int		g_dbg;
 t_shenv	*g_shenv;
 
@@ -154,21 +150,18 @@ int		msh_exec_builtin(t_shenv *e);
 int		msh_exec_pwd(t_shenv *e);
 int		msh_exec(t_shenv *e);
 
+char	**quote_strsplit(char *s, int c);
+int		quote_wordcount(char *s, int c);
+
+void	init_shenv(t_shenv *e, t_margs *m);
+
+void	msh_debug_print(char *fmt, ...);
+
 void	cd_builtin(t_shenv *e);
 void	echo_builtin(t_shenv *e);
 void	env_builtin(t_shenv *e);
 void	exit_builtin(t_shenv *e);
 void	setenv_builtin(t_shenv *e);
 void	unsetenv_builtin(t_shenv *e);
-
-char	*get_string_value(const char *v);
-char	*get_working_directory(const char *v);
-char	*sh_makepath(const char *p, const char *d, int f);
-char	*get_string_value(const char *var);
-
-char	**quote_strsplit(char *s, int c);
-int		quote_wordcount(char *s, int c);
-
-void	msh_debug_print(char *fmt, ...);
 
 #endif

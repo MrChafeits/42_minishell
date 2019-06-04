@@ -6,7 +6,7 @@
 /*   By: callen <callen@student.42.us.org>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/01 01:20:10 by callen            #+#    #+#             */
-/*   Updated: 2019/06/02 20:43:19 by callen           ###   ########.fr       */
+/*   Updated: 2019/06/03 17:45:35 by callen           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int			msh_exec_builtin(t_shenv *e)
 	int				status;
 
 	i = -1;
-	status = 129;
+	status = 127;
 	while (g_cmds[++i].cmd != 0)
 	{
 		if (ft_strequ(g_cmds[i].cmd, *e->cmdv))
@@ -52,6 +52,8 @@ int			msh_exec_pwd(t_shenv *e)
 	pid_t	pid;
 	pid_t	wid;
 
+	msh_debug_print("exec_pwd: start ret(%d, %d)",
+			SHR8(e->ret), e->ret & 0xff);
 	pid = fork();
 	signal(SIGINT, msh_sigint);
 	if (!pid)
@@ -61,7 +63,7 @@ int			msh_exec_pwd(t_shenv *e)
 		exit((e->pwd_ex = ex));
 	}
 	else if (pid < 0)
-		return (!!ft_dprintf(2, "minishell: %s: Fatal error\n", *e->cmdv) - 2);
+		msh_panic(*e->cmdv);
 	else
 	{
 		wid = wait(&st);
@@ -105,7 +107,7 @@ int			msh_exec(t_shenv *e)
 	st_d = 0;
 	st_b = msh_exec_builtin(e);
 	if (st_b == 1 || WIFEXITED(st_b))
-		return (st_b == 129 ? e->ret : st_b);
+		return (st_b == 127 ? e->ret : st_b);
 	if (ISABSP(*e->cmdv) || ISPWD(*e->cmdv) || ISRELP(*e->cmdv))
 	{
 		st_d = msh_exec_pwd_check(e);
@@ -115,13 +117,13 @@ int			msh_exec(t_shenv *e)
 	st_p = msh_exec_path(e);
 	if (CHKEP(st_p) && WIFEXITED(st_p))
 		return (st_p);
-	else if (st_b == 129 && !st_d && SHR8(st_p) == 255)
+	else if (st_b == 127 && !st_d && SHR8(st_p) == 255)
 		ft_dprintf(2, "minishell: %s: Unknown command\n", *e->cmdv);
 	else
 		e->signal_recv = 0;
-	msh_debug_print("exec: Ret err127 b(%d) d(%d) p(%d) e->ret(%d)(%d, %d)",
+	msh_debug_print("exec: Ret err b(%d) d(%d) p(%d) e->ret(%d)(%d, %d)",
 			st_b, st_d, st_p, e->ret, SHR8(e->ret), e->ret & 0xff);
-	return (127);
+	return (e->signal_recv ? e->ret + 128 : e->ret);
 }
 
 #undef CHKEP
